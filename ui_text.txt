@@ -1,0 +1,370 @@
+# UI Text for Sales App
+
+## Authentication Screens
+- Sign In
+- Sign Up
+- Create Account
+- Email
+- Password
+- Name
+- Company Name (Optional)
+- Forgot Password?
+- Don't have an account? Sign Up
+- Already have an account? Sign In
+- Sign in with Google
+- Sign in with Apple
+- User Role
+- Staff
+- Admin
+- Sign Out
+- Logout
+- Welcome back
+- Access Denied
+- You do not have admin privileges
+- Go Back to Dashboard
+
+## Navigation
+- Dashboard
+- Search
+- Categories
+- Menu
+- Settings
+- Profile
+- Orders
+- Transactions
+- Reports
+- Help
+- About
+- Inventory
+
+## Admin Dashboard
+- Admin Dashboard
+- Admin Functions
+- Quick Statistics
+- Total Items
+- Total Categories
+- Items Added Today
+- Items Removed Today
+- Net Value Change Today
+- Staff Management
+- Statistics
+- System Settings
+- Export Data
+- Refresh
+
+## Staff Management
+- Staff Management
+- Add Staff
+- Remove Staff
+- Change Role
+- Delete User
+- Staff List
+- Name
+- Email
+- Role
+- Phone Number
+- Company
+- Cancel
+- OK
+- Delete
+- Are you sure you want to remove this staff member?
+
+## Statistics Screen
+- Statistics
+- Day
+- Week
+- Month
+- Year
+- Inbound
+- Outbound
+- Balance
+- Summary
+- Statistics for
+- Items Added
+- Items Removed
+- Net Change
+- Categories Added
+- Categories Removed
+- Total Value Added
+- Total Value Removed
+- No data available for the selected period
+- Today
+
+## Calendar
+- Today
+- Done
+- Cancel
+
+## Inventory Management
+- Inbound
+- Edit Item
+- Delete Item
+- Item Details
+- Item Name
+- Category
+- Price
+- Quantity
+- Unit
+- Barcode
+- Minimum Level
+- Add Category
+- Edit Category
+- Delete Category
+- Select Category
+- Search
+- Filter
+- Sort By
+- Name
+- Price
+- Quantity
+- Date Added
+- Save
+- Cancel
+- Delete
+
+## Item Details
+- Item Name
+- Category
+- Price
+- Quantity
+- Unit
+- Barcode
+- Minimum Level
+- Total Value
+- Date Added
+- Last Updated
+- Scan QR / Barcode
+- Tap to scan with camera
+- Rescan
+
+## Units
+- Pieces
+- Kilograms
+- Grams
+- Liters
+- Milliliters
+- pcs
+- kg
+- g
+- l
+- ml
+
+## Messages and Notifications
+- Success
+- Error
+- Warning
+- Info
+- Item saved to database successfully
+- Item updated in database successfully
+- Failed to save item
+- Failed to update item
+- Low Stock Alert
+- Barcode is required for new items
+- Please fill in all required fields and select a category
+- Minimum level cannot be higher than the current quantity
+- Item Already Exists
+- Each item can only belong to a single category
+- No Categories Found
+- Updated user role
+
+## Common UI Elements
+- Save
+- Cancel
+- Delete
+- Edit
+- Add
+- Remove
+- Back
+- Next
+- Done
+- Loading
+- Retry
+- Close
+- Refresh
+- Search
+- Filter
+- Sort
+- Select
+- Clear
+- Reset
+- Apply
+- Yes
+- No
+- OK
+- Submit
+- Confirm
+- Export
+- Import
+- Settings
+- Help
+- About
+- Profile
+- Logout
+- Sign Out
+- Error
+- Success
+- Warning
+- Info
+- No results found
+- Please try again
+- Required field
+- Optional
+- Select date
+- Select time
+- Select category
+- Select item
+- Value
+- Total
+- System Settings - Coming Soon
+- Export Data - Coming Soon
+
+## Customer Management
+- Customers
+- Add Customer
+- Edit Customer
+- Delete Customer
+- Customer Details
+- Customer List
+- Customer Name
+- Contact Person
+- Email
+- Phone
+- Address
+- City
+- State/Province
+- Postal Code
+- Country
+- Notes
+- Purchase History
+- Total Spent
+- Last Purchase
+- Import Customers
+- Export Customers
+- Search Customers
+
+## Sales/Transactions
+- New Sale
+- Complete Sale
+- Cancel Sale
+- Add Item
+- Remove Item
+- Quantity
+- Discount
+- Apply Discount
+- Percentage
+- Fixed Amount
+- Tax
+- Subtotal
+- Total
+- Payment Method
+- Cash
+- Credit Card
+- Debit Card
+- Mobile Payment
+- Bank Transfer
+- Change Due
+- Receipt
+- Email Receipt
+- Print Receipt
+- Sale History
+- Transaction ID
+- Date/Time
+- Cashier
+- Void Transaction
+- Return/Refund
+
+## Invoicing
+- Create Invoice
+- Invoice List
+- Invoice Details
+- Invoice Number
+- Invoice Date
+- Due Date
+- Customer
+- Items
+- Subtotal
+- Tax
+- Discount
+- Total Amount
+- Status
+- Paid
+- Unpaid
+- Partially Paid
+- Overdue
+- Cancelled
+- Send Invoice
+- Print Invoice
+- Mark as Paid
+- Payment History
+- Reminder
+- Send Reminder
+
+## Payment Processing
+- Process Payment
+- Payment Amount
+- Payment Method
+- Payment Date
+- Reference Number
+- Notes
+- Partial Payment
+- Full Payment
+- Payment Received
+- Payment Failed
+- Retry Payment
+- Refund
+- Process Refund
+- Refund Amount
+- Refund Reason
+
+## Product Categories
+- Main Category
+- Subcategory
+- Category Hierarchy
+- Parent Category
+- Move Category
+- Merge Categories
+- Category Icon
+- Category Color
+- Active Categories
+- Inactive Categories
+- Hide Empty Categories
+
+## User Profile
+- My Profile
+- Change Password
+- Profile Picture
+- Update Information
+- Security Settings
+- Notification Preferences
+- Language
+- Theme
+- Dark Mode
+- Light Mode
+- System Default
+- Time Zone
+- Date Format
+- Currency Format
+
+## Reports
+- Sales Reports
+- Inventory Reports
+- Customer Reports
+- Staff Reports
+- Tax Reports
+- Export Report
+- Generate Report
+- Report Period
+- Custom Date Range
+- Report Format
+- PDF
+- Excel
+- CSV
+- Charts
+- Tables
+- Top Selling Items
+- Slow Moving Items
+- Revenue
+- Profit
+- Expenses
+- Growth
+- Comparison 
