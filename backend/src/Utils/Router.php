@@ -54,7 +54,10 @@ class Router {
                 $userContext = [];
                 foreach ($route['middlewares'] as $middleware) {
                     if (is_callable($middleware)) {
-                        $userContext = $middleware($userContext);
+                        $result = call_user_func($middleware, $userContext);
+                        if (is_array($result)) {
+                            $userContext = $result;
+                        }
                     }
                 }
 
