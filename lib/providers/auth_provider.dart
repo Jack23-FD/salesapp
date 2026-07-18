@@ -4,9 +4,11 @@ import '../services/auth_service.dart' hide describeEnum;
 import '../services/rbac_service.dart';
 import '../utils/storage_utils.dart';
 import '../models/user.dart';
+import '../services/api_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService = AuthService();
+  final ApiService _apiService = ApiService();
   firebase_auth.User? _firebaseUser;
   User? _user;
   bool _isLoading = false;
@@ -45,20 +47,15 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Check if user is logged in from shared preferences
       bool isLoggedIn = await _authService.isLoggedIn();
 
       if (isLoggedIn) {
-        // Get current user
         _firebaseUser = _authService.currentUser;
-
         if (_firebaseUser != null) {
-          // Get user data
           await _loadUserData();
         }
       }
 
-      // Listen for auth state changes
       _authService.authStateChanges.listen((firebase_auth.User? user) {
         _firebaseUser = user;
         notifyListeners();
@@ -79,62 +76,54 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  // Load user data
+  // Load user data from the PHP API backend
   Future<void> _loadUserData() async {
     try {
-      print("AuthProvider: Loading user data from Firebase");
-      _user = await _authService.getUserModel();
+      print("AuthProvider: Loading user profile from PHP API");
+      final profileMap = await _apiService.getProfile();
       
-      if (_user == null) {
-        print("AuthProvider: User data couldn't be retrieved from Firestore");
-        // Try to create a basic user if Firestore data isn't available
-        if (_firebaseUser != null) {
-          print("AuthProvider: Creating basic user from Firebase user");
-          
-          // Check if we have a cached role from previous session
-          final cachedRole = await StorageUtils.getCachedStringValue('user_role');
-          final userRole = cachedRole == 'admin' 
-              ? UserRole.admin 
-              : UserRole.staff;
-          
-          print("AuthProvider: Using role from cache: $cachedRole (enum: $userRole)");
-          
-          _user = User(
-            id: _firebaseUser!.uid,
-            email: _firebaseUser!.email ?? '',
-            name: _firebaseUser!.displayName ?? 'User',
-            role: userRole,
-            createdAt: DateTime.now(),
-            lastLogin: DateTime.now(),
-            authProvider: 'email',
-          );
-          
-          // Try to save user data to Firestore as a recovery mechanism
-          try {
-            print("AuthProvider: Attempting to recover by saving user data to Firestore");
-            await _authService.updateUserData(_user!);
-            print("AuthProvider: Recovery save successful");
-          } catch (e) {
-            print("AuthProvider: Failed to save recovery data: $e");
-          }
-        }
-      } else {
-        print("AuthProvider: User data loaded successfully");
-        print("AuthProvider: User role: ${_user!.role}");
-        print("AuthProvider: User is admin? ${_user!.isAdmin}");
-        
-        // Cache the role for future use
-        await StorageUtils.cacheStringValue('user_role', describeEnum(_user!.role));
-      }
-      
-      // Migrate any existing data to user-specific storage
+      // Parse role from string
+      final roleStr = profileMap['role'] ?? 'staff';
+      final role = roleStr == 'admin' ? UserRole.admin : UserRole.staff;
+
+      _user = User(
+        id: profileMap['id'] ?? '',
+        email: profileMap['email'] ?? '',
+        name: profileMap['name'] ?? '',
+        companyName: profileMap['company_name'] ?? '',
+        phoneNumber: profileMap['phone_number'] ?? '',
+        role: role,
+        createdAt: DateTime.tryParse(profileMap['created_at'] ?? '') ?? DateTime.now(),
+        lastLogin: DateTime.now(),
+        authProvider: 'email',
+      );
+
+      print("AuthProvider: User profile loaded successfully from PHP API");
+      await StorageUtils.cacheStringValue('user_role', roleStr);
       await StorageUtils.migrateToUserSpecificData();
       
       notifyListeners();
     } catch (e) {
-      print("AuthProvider: Error loading user data: $e");
+      print("AuthProvider: Error loading user data from PHP API: $e");
       _error = e.toString();
       notifyListeners();
+      
+      // Fallback: Populate basic info from Firebase Auth if the API call fails
+      if (_firebaseUser != null && _user == null) {
+        final cachedRole = await StorageUtils.getCachedStringValue('user_role');
+        final userRole = cachedRole == 'admin' ? UserRole.admin : UserRole.staff;
+        
+        _user = User(
+          id: _firebaseUser!.uid,
+          email: _firebaseUser!.email ?? '',
+          name: _firebaseUser!.displayName ?? 'User',
+          role: userRole,
+          createdAt: DateTime.now(),
+          lastLogin: DateTime.now(),
+          authProvider: 'email',
+        );
+        notifyListeners();
+      }
     }
   }
 
@@ -153,9 +142,8 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       print("AuthProvider: Starting sign up with role: $role");
-      print("AuthProvider: Role as string: ${describeEnum(role)}");
-      print("AuthProvider: Is admin? ${role == UserRole.admin}");
       
+      // 1. Sign up on Firebase Auth primarily
       await _authService.signUp(
         email: email,
         password: password,
@@ -165,6 +153,12 @@ class AuthProvider extends ChangeNotifier {
         role: role,
       );
 
+      // 2. Register Admin/Company details on PHP backend
+      if (role == UserRole.admin && companyName != null) {
+        print("AuthProvider: Registering admin company on PHP API");
+        await _apiService.registerAdmin(name, companyName, phoneNumber);
+      }
+
       await _loadUserData();
       
       _isLoading = false;
@@ -172,7 +166,7 @@ class AuthProvider extends ChangeNotifier {
       return true;
     } catch (e) {
       _isLoading = false;
-      _error = _handleAuthError(e);
+      _error = e.toString();
       notifyListeners();
       return false;
     }
@@ -200,30 +194,42 @@ class AuthProvider extends ChangeNotifier {
       return true;
     } catch (e) {
       _isLoading = false;
-      _error = _handleAuthError(e);
+      _error = e.toString();
       notifyListeners();
       return false;
     }
   }
 
-  // Sign in with Google
-  Future<bool> signInWithGoogle({UserRole role = UserRole.staff}) async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
+  // Invite and add a staff member (Admin Only)
+  Future<bool> addStaff(String uid, String name, String email, String? phoneNumber) async {
     try {
-      await _authService.signInWithGoogle(role: role);
-      await _loadUserData();
-      
-      _isLoading = false;
-      notifyListeners();
+      await _apiService.registerStaff(uid, name, email, phoneNumber);
       return true;
     } catch (e) {
-      _isLoading = false;
-      _error = _handleAuthError(e);
-      notifyListeners();
+      print("AuthProvider: Error registering staff: $e");
       return false;
+    }
+  }
+
+  // List staff members
+  Future<List<User>> getStaffList() async {
+    try {
+      final list = await _apiService.listStaff();
+      return list.map((json) {
+        final roleStr = json['role'] ?? 'staff';
+        final role = roleStr == 'admin' ? UserRole.admin : UserRole.staff;
+        return User(
+          id: json['id'] ?? '',
+          email: json['email'] ?? '',
+          name: json['name'] ?? '',
+          phoneNumber: json['phone_number'] ?? '',
+          role: role,
+          createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
+        );
+      }).toList();
+    } catch (e) {
+      print("AuthProvider: Error getting staff list: $e");
+      return [];
     }
   }
 
@@ -233,125 +239,16 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Add timeout to prevent hanging
       await _authService.signOut().timeout(
         const Duration(seconds: 5),
         onTimeout: () {
           print("AuthProvider: Sign out operation timed out!");
-          // Force local sign-out even if Firebase times out
-          _firebaseUser = null;
-          _user = null;
-          throw Exception("Sign out timed out. Please try again.");
         },
       );
-      
-      // Clear user data
-      _firebaseUser = null;
       _user = null;
-      
-      // Clear any cached auth data
-      await StorageUtils.clearAuthCache();
-      
-      print("AuthProvider: Sign out completed successfully");
+      _firebaseUser = null;
     } catch (e) {
       print("AuthProvider: Error during sign out: $e");
-      _error = "Sign out failed: ${e.toString()}";
-      
-      // Force sign out locally even if there was an error with Firebase
-      _firebaseUser = null;
-      _user = null;
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  // Reset password
-  Future<bool> resetPassword(String email) async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
-    try {
-      await _authService.resetPassword(email);
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    } catch (e) {
-      _isLoading = false;
-      _error = _handleAuthError(e);
-      notifyListeners();
-      return false;
-    }
-  }
-
-  // Update user role
-  Future<bool> updateUserRole(String userId, UserRole role) async {
-    try {
-      final success = await _authService.updateUserRole(userId, role);
-      
-      if (success && _user != null && _user!.id == userId) {
-        _user = _user!.copyWith(role: role);
-        notifyListeners();
-      }
-      
-      return success;
-    } catch (e) {
-      _error = e.toString();
-      notifyListeners();
-      return false;
-    }
-  }
-
-  // Check if user has specific permission
-  bool hasPermission(String permission) {
-    if (_user == null) return false;
-    
-    final rbacService = RbacService();
-    return rbacService.hasPermission(_user!, permission);
-  }
-
-  // Handle Firebase Auth errors
-  String _handleAuthError(dynamic error) {
-    if (error is firebase_auth.FirebaseAuthException) {
-      switch (error.code) {
-        case 'user-not-found':
-          return 'No user found with this email.';
-        case 'wrong-password':
-          return 'Wrong password provided.';
-        case 'email-already-in-use':
-          return 'The email address is already in use.';
-        case 'weak-password':
-          return 'The password is too weak.';
-        case 'invalid-email':
-          return 'The email address is invalid.';
-        case 'operation-not-allowed':
-          return 'Email/password accounts are not enabled.';
-        case 'too-many-requests':
-          return 'Too many requests. Try again later.';
-        case 'network-request-failed':
-          return 'Network error. Check your connection.';
-        case 'google-sign-in-cancelled':
-          return 'Google sign in was cancelled.';
-        default:
-          return error.message ?? 'An unknown error occurred.';
-      }
-    }
-    return error.toString();
-  }
-
-  // Reset and retry initialization
-  Future<void> retryInitialization() async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-    
-    try {
-      print("AuthProvider: Retrying initialization");
-      await _init();
-    } catch (e) {
-      print("Error during retry initialization: $e");
-      _error = e.toString();
     } finally {
       _isLoading = false;
       notifyListeners();

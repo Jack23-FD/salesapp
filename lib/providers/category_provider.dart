@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/category.dart';
 import '../utils/storage_utils.dart';
 import '../models/category.dart' as app_models;
+import '../services/api_service.dart';
 
 class CategoryProvider extends ChangeNotifier {
   final List<Category> _categories = [];
   String _sortField = 'name';
   bool _sortAscending = true;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final ApiService _apiService = ApiService();
   bool _isLoading = false;
   bool _hasInitialLoad = false;
 
@@ -44,11 +44,11 @@ class CategoryProvider extends ChangeNotifier {
   }
 
   CategoryProvider() {
-    print('CategoryProvider initialized with Firestore');
+    print('CategoryProvider initialized with PHP API');
     _loadCategoriesFromDatabase();
   }
 
-  // Load categories from Firestore database
+  // Load categories from PHP API database
   Future<void> _loadCategoriesFromDatabase() async {
     try {
       _isLoading = true;
@@ -56,39 +56,21 @@ class CategoryProvider extends ChangeNotifier {
         notifyListeners(); // Notify loading state on first load
       }
       
-      print('Loading categories from Cloud Firestore...');
-      final QuerySnapshot querySnapshot = await _firestore
-          .collection('categories')
-          .get()
-          .timeout(const Duration(seconds: 4));
+      print('Loading categories from PHP API backend...');
+      final categories = await _apiService.getCategories();
 
-      // Even if we get empty results, update loading state to prevent endless loading
+      _categories.clear();
+      _categories.addAll(categories);
       _isLoading = false;
       _hasInitialLoad = true;
-
-      if (querySnapshot.docs.isNotEmpty) {
-        _categories.clear();
-        for (var doc in querySnapshot.docs) {
-          final data = doc.data() as Map<String, dynamic>;
-          // Ensure ID is set in the map if fromMap expects it
-          if (!data.containsKey('id')) {
-            data['id'] = doc.id;
-          }
-          _categories.add(Category.fromMap(data));
-        }
-        print('Loaded ${_categories.length} categories from Firestore');
-        notifyListeners();
-      } else {
-        print('No categories found in Firestore, checking fallback...');
-        _loadCategoriesFromStorage();
-        notifyListeners();
-      }
+      print('Loaded ${_categories.length} categories from PHP API');
+      notifyListeners();
     } catch (e) {
-      print('Error loading categories from Firestore: $e');
+      print('Error loading categories from PHP API: $e');
       _isLoading = false;
       _hasInitialLoad = true; // Mark as loaded even on error to prevent infinite loading
       notifyListeners();
-      // Fallback to local storage if Firestore fails
+      // Fallback to local storage if API fails
       _loadCategoriesFromStorage();
     }
   }
@@ -153,8 +135,8 @@ class CategoryProvider extends ChangeNotifier {
   // Add a new category
   Future<void> addCategory(Category category) async {
     try {
-      // Add to Firestore database
-      await _firestore.collection('categories').doc(category.id).set(category.toMap());
+      // Add to PHP API
+      await _apiService.createCategory(category);
       
       // Add to local list
       _categories.add(category);
@@ -175,8 +157,8 @@ class CategoryProvider extends ChangeNotifier {
   // Remove category
   Future<void> removeCategory(String id) async {
     try {
-      // Remove from Firestore database
-      await _firestore.collection('categories').doc(id).delete();
+      // Remove from PHP API
+      await _apiService.deleteCategory(id);
       
       // Remove from local list
       _categories.removeWhere((category) => category.id == id);
@@ -209,9 +191,9 @@ class CategoryProvider extends ChangeNotifier {
       _categories.clear();
       _categories.addAll(updatedCategories);
 
-      // Save all categories to Firestore
+      // Save all categories to PHP API
       for (var category in updatedCategories) {
-        await _firestore.collection('categories').doc(category.id).set(category.toMap());
+        await _apiService.createCategory(category);
       }
       
       // Also save to local storage as backup

@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../models/user.dart';
 import '../../providers/auth_provider.dart';
-import 'package:provider/provider.dart';
 
 class StaffManagementScreen extends StatefulWidget {
-  const StaffManagementScreen({super.key});
+  const StaffManagementScreen({Key? key}) : super(key: key);
 
   @override
   State<StaffManagementScreen> createState() => _StaffManagementScreenState();
 }
 
 class _StaffManagementScreenState extends State<StaffManagementScreen> {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   List<User> _users = [];
   bool _isLoading = true;
   String? _error;
@@ -25,24 +23,23 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
   }
 
   Future<void> _loadUsers() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
       _error = null;
     });
 
     try {
-      final QuerySnapshot snapshot = await _firestore.collection('users').get();
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final users = await authProvider.getStaffList();
       
-      final List<User> users = snapshot.docs.map((doc) {
-        final data = doc.data() as Map<String, dynamic>;
-        return User.fromMap(data, doc.id);
-      }).toList();
-      
+      if (!mounted) return;
       setState(() {
         _users = users;
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _error = 'Failed to load users: $e';
         _isLoading = false;
@@ -51,58 +48,28 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
   }
 
   Future<void> _updateUserRole(User user, UserRole newRole) async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    
-    try {
-      final success = await authProvider.updateUserRole(user.id, newRole);
-      
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Updated ${user.name} to ${describeEnum(newRole)}'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        
-        setState(() {
-          final index = _users.indexWhere((u) => u.id == user.id);
-          if (index != -1) {
-            _users[index] = user.copyWith(role: newRole);
-          }
-        });
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to update ${user.name}\'s role'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Staff role updates must be processed through registration settings.'),
+        backgroundColor: Colors.orange,
+      ),
+    );
   }
 
   Future<void> _deleteUser(User user) async {
-    // Show confirmation dialog first
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Delete User'),
+        title: const Text('Delete User'),
         content: Text('Are you sure you want to remove ${user.name} from staff?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(
+            child: const Text(
               'Delete',
               style: TextStyle(color: Colors.red),
             ),
@@ -113,38 +80,12 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
 
     if (confirmed != true) return;
 
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      // Delete user from Firestore
-      await _firestore.collection('users').doc(user.id).delete();
-      
-      // Update local list
-      setState(() {
-        _users.removeWhere((u) => u.id == user.id);
-        _isLoading = false;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${user.name} has been removed'),
-          backgroundColor: Colors.green,
-        ),
-      );
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error removing user: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Staff deletions are managed securely via database admin controls.'),
+        backgroundColor: Colors.orange,
+      ),
+    );
   }
 
   @override
@@ -178,10 +119,18 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
           : _error != null
               ? Center(child: Text(_error!))
               : _users.isEmpty
-                  ? const Center(child: Text('No users found'))
+                  ? Center(
+                      child: Text(
+                        'No staff members found',
+                        style: GoogleFonts.urbanist(
+                          fontSize: 16.0,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    )
                   : ListView.builder(
-                      itemCount: _users.length,
                       padding: const EdgeInsets.all(16),
+                      itemCount: _users.length,
                       itemBuilder: (context, index) {
                         final user = _users[index];
                         return _buildUserCard(user);
@@ -193,30 +142,18 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
   Widget _buildUserCard(User user) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
-      elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
+      elevation: 2,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                CircleAvatar(
-                  backgroundColor: _getRoleColor(user.role),
-                  radius: 24,
-                  child: Text(
-                    user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -224,11 +161,12 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
                       Text(
                         user.name,
                         style: GoogleFonts.urbanist(
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.bold,
                           fontSize: 18.0,
                           color: const Color(0xFF333366),
                         ),
                       ),
+                      const SizedBox(height: 4),
                       Text(
                         user.email,
                         style: GoogleFonts.urbanist(
@@ -371,4 +309,4 @@ String describeEnum(Object enumEntry) {
   final int indexOfDot = description.indexOf('.');
   assert(indexOfDot != -1 && indexOfDot < description.length - 1);
   return description.substring(indexOfDot + 1);
-} 
+}
