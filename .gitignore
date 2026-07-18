@@ -42,3 +42,9 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Backend configuration
+backend/.env
+backend/vendor/
+backend/config/public_keys_cache.json
+
