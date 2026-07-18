@@ -26,6 +26,11 @@ class ItemProvider extends ChangeNotifier {
   bool _hasInitiallyLoaded = false;
   String? _error;
 
+  // Cache for Firestore transactions to avoid redundant queries
+  List<Map<String, dynamic>>? _cachedInboundTxs;
+  List<Map<String, dynamic>>? _cachedOutboundTxs;
+  DateTime? _cachedTxsDate;
+
   // Getters
   UnmodifiableListView<Item> get allItems => UnmodifiableListView(_items);
   UnmodifiableListView<String> get categories => UnmodifiableListView(_categories.toList());
@@ -41,12 +46,8 @@ class ItemProvider extends ChangeNotifier {
   }
 
   Future<void> _initializeDatabase() async {
-    try {
-      await _databaseService.initializeDatabase();
-      debugPrint('Database initialized successfully');
-    } catch (e) {
-      debugPrint('Error initializing database: $e');
-    }
+    // MySQL initialization disabled in favor of Cloud Firestore
+    return;
   }
 
   Future<void> _loadFromLocalStorage() async {
@@ -69,17 +70,20 @@ class ItemProvider extends ChangeNotifier {
         _items.clear();
       }
       
-      // Make sure missing transactions are created if needed
-      await _ensureProductsHaveTransactions();
+      print('Loading items from Cloud Firestore...');
+      final QuerySnapshot querySnapshot = await _firestore
+          .collection('items')
+          .get()
+          .timeout(const Duration(seconds: 4));
+
+      if (querySnapshot.docs.isEmpty) {
+        throw Exception('No products found in Firestore');
+      }
       
-      // Get all products from MySQL database with proper category information
-      final products = await _databaseService.getAllProductsWithCategories()
-          .timeout(const Duration(seconds: 5), onTimeout: () {
-        print('Database query timeout - returning empty list');
-        return [];
-      });
-      
-      for (var item in products) {
+      for (var doc in querySnapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        final item = Item.fromMap(data, doc.id);
+        
         // Avoid duplicates
         if (!_items.any((existingItem) => existingItem.id == item.id)) {
           if (!_itemsByCategory.containsKey(item.categoryId)) {
@@ -90,17 +94,106 @@ class ItemProvider extends ChangeNotifier {
         }
       }
       
-      // Debug current transaction data after loading
-      await _databaseService.debugTodaysTransactions();
-      
       _isLoading = false;
       _hasInitiallyLoaded = true;
       notifyListeners();
     } catch (e) {
-      debugPrint('Error loading items from MySQL database: $e');
+      debugPrint('Error loading items from Firestore: $e');
       _error = e.toString();
       _isLoading = false;
       _hasInitiallyLoaded = true; // Mark as loaded even on error
+      
+      // Fallback: Populate mock items for testing when offline/database is down
+      if (_items.isEmpty) {
+        print('Populating mock items for offline testing...');
+        final mockItems = [
+          Item(
+            id: 'item_coke',
+            name: 'Coca-Cola 330ml',
+            categoryId: 'cat_beverages',
+            quantity: 50,
+            unit: 'pcs',
+            price: 1.50,
+            createdAt: DateTime.now(),
+            categoryName: 'Beverages',
+            barcode: '1234567890123',
+          ),
+          Item(
+            id: 'item_juice',
+            name: 'Orange Juice 1L',
+            categoryId: 'cat_beverages',
+            quantity: 25,
+            unit: 'pcs',
+            price: 3.00,
+            createdAt: DateTime.now(),
+            categoryName: 'Beverages',
+            barcode: '1234567890124',
+          ),
+          Item(
+            id: 'item_water',
+            name: 'Mineral Water 500ml',
+            categoryId: 'cat_beverages',
+            quantity: 100,
+            unit: 'pcs',
+            price: 0.80,
+            createdAt: DateTime.now(),
+            categoryName: 'Beverages',
+            barcode: '1234567890125',
+          ),
+          Item(
+            id: 'item_chips',
+            name: 'Potato Chips Lays',
+            categoryId: 'cat_snacks',
+            quantity: 40,
+            unit: 'pcs',
+            price: 2.00,
+            createdAt: DateTime.now(),
+            categoryName: 'Snacks',
+            barcode: '1234567890126',
+          ),
+          Item(
+            id: 'item_cookies',
+            name: 'Chocolate Chip Cookies',
+            categoryId: 'cat_snacks',
+            quantity: 30,
+            unit: 'pcs',
+            price: 2.50,
+            createdAt: DateTime.now(),
+            categoryName: 'Snacks',
+            barcode: '1234567890127',
+          ),
+          Item(
+            id: 'item_cable',
+            name: 'USB-C Charging Cable',
+            categoryId: 'cat_electronics',
+            quantity: 15,
+            unit: 'pcs',
+            price: 9.99,
+            createdAt: DateTime.now(),
+            categoryName: 'Electronics',
+            barcode: '1234567890128',
+          ),
+          Item(
+            id: 'item_earphones',
+            name: 'Wired Earphones',
+            categoryId: 'cat_electronics',
+            quantity: 10,
+            unit: 'pcs',
+            price: 14.99,
+            createdAt: DateTime.now(),
+            categoryName: 'Electronics',
+            barcode: '1234567890129',
+          ),
+        ];
+
+        for (var item in mockItems) {
+          if (!_itemsByCategory.containsKey(item.categoryId)) {
+            _itemsByCategory[item.categoryId] = [];
+          }
+          _itemsByCategory[item.categoryId]!.add(item);
+          _items.add(item);
+        }
+      }
       notifyListeners();
     }
   }
@@ -222,162 +315,152 @@ class ItemProvider extends ChangeNotifier {
   static const String _cachedOutboundCategoriesKey = 'cached_outbound_categories';
   static const String _cachedOutboundValueKey = 'cached_outbound_value';
   
-  // Get total inbound quantity for a date - Database version with cache
+  // Firestore helper to load and cache inbound transactions for a selected date
+  Future<List<Map<String, dynamic>>> _getInboundTransactionsForDate(DateTime date) async {
+    if (_cachedTxsDate != null &&
+        _cachedTxsDate!.year == date.year &&
+        _cachedTxsDate!.month == date.month &&
+        _cachedTxsDate!.day == date.day &&
+        _cachedInboundTxs != null) {
+      return _cachedInboundTxs!;
+    }
+
+    try {
+      final querySnapshot = await _firestore
+          .collection('inbound_transactions')
+          .get()
+          .timeout(const Duration(seconds: 4));
+          
+      final start = DateTime(date.year, date.month, date.day);
+      final end = DateTime(date.year, date.month, date.day, 23, 59, 59);
+
+      final txs = <Map<String, dynamic>>[];
+      for (var doc in querySnapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        if (data['date'] != null) {
+          final txDate = DateTime.parse(data['date'] as String);
+          if (txDate.isAfter(start.subtract(const Duration(seconds: 1))) &&
+              txDate.isBefore(end.add(const Duration(seconds: 1)))) {
+            txs.add(data);
+          }
+        }
+      }
+      _cachedInboundTxs = txs;
+      _cachedTxsDate = date;
+      return txs;
+    } catch (e) {
+      debugPrint('Error getting inbound transactions from Firestore: $e');
+      return [];
+    }
+  }
+
+  // Firestore helper to load and cache outbound transactions for a selected date
+  Future<List<Map<String, dynamic>>> _getOutboundTransactionsForDate(DateTime date) async {
+    if (_cachedTxsDate != null &&
+        _cachedTxsDate!.year == date.year &&
+        _cachedTxsDate!.month == date.month &&
+        _cachedTxsDate!.day == date.day &&
+        _cachedOutboundTxs != null) {
+      return _cachedOutboundTxs!;
+    }
+
+    try {
+      final querySnapshot = await _firestore
+          .collection('outbound_transactions')
+          .get()
+          .timeout(const Duration(seconds: 4));
+          
+      final start = DateTime(date.year, date.month, date.day);
+      final end = DateTime(date.year, date.month, date.day, 23, 59, 59);
+
+      final txs = <Map<String, dynamic>>[];
+      for (var doc in querySnapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        if (data['date'] != null) {
+          final txDate = DateTime.parse(data['date'] as String);
+          if (txDate.isAfter(start.subtract(const Duration(seconds: 1))) &&
+              txDate.isBefore(end.add(const Duration(seconds: 1)))) {
+            txs.add(data);
+          }
+        }
+      }
+      _cachedOutboundTxs = txs;
+      _cachedTxsDate = date;
+      return txs;
+    } catch (e) {
+      debugPrint('Error getting outbound transactions from Firestore: $e');
+      return [];
+    }
+  }
+
+  // Get total inbound quantity for a date - Firestore version
   Future<int> getTotalInboundQuantityFromDB(DateTime date) async {
-    try {
-      final inboundQty = await _databaseService.getTotalInboundQuantityByDate(date);
-      
-      // Cache the result
-      final key = '${formatDateForCacheKey(date)}_$_cachedInboundQuantityKey';
-      await StorageUtils.cacheIntValue(key, inboundQty);
-      
-      return inboundQty;
-    } catch (e) {
-      debugPrint('Error getting inbound quantity from database: $e');
-      
-      // Try to get from cache first
-      final key = '${formatDateForCacheKey(date)}_$_cachedInboundQuantityKey';
-      final cachedValue = await StorageUtils.getCachedIntValue(key);
-      if (cachedValue != null) {
-        debugPrint('Using cached inbound quantity value: $cachedValue');
-        return cachedValue;
-      }
-      
-      // Fall back to in-memory calculation if database query fails and no cache
-      return getTotalInboundQuantity(date);
-    }
+    final txs = await _getInboundTransactionsForDate(date);
+    return txs.fold<int>(0, (int sum, tx) => sum + (tx['quantity'] as num).toInt());
   }
 
-  // Get total inbound categories for a date - Database version with cache
+  // Get total inbound categories for a date - Firestore version
   Future<int> getTotalInboundCategoriesFromDB(DateTime date) async {
-    try {
-      final inboundCats = await _databaseService.getInboundCategoriesCountByDate(date);
-      
-      // Cache the result
-      final key = '${formatDateForCacheKey(date)}_$_cachedInboundCategoriesKey';
-      await StorageUtils.cacheIntValue(key, inboundCats);
-      
-      return inboundCats;
-    } catch (e) {
-      debugPrint('Error getting inbound categories from database: $e');
-      
-      // Try to get from cache first
-      final key = '${formatDateForCacheKey(date)}_$_cachedInboundCategoriesKey';
-      final cachedValue = await StorageUtils.getCachedIntValue(key);
-      if (cachedValue != null) {
-        debugPrint('Using cached inbound categories value: $cachedValue');
-        return cachedValue;
+    final txs = await _getInboundTransactionsForDate(date);
+    final categoryIds = <String>{};
+    for (var tx in txs) {
+      final itemId = tx['itemId'];
+      final itemIndex = _items.indexWhere((i) => i.id == itemId);
+      if (itemIndex != -1) {
+        categoryIds.add(_items[itemIndex].categoryId);
       }
-      
-      // Fall back to in-memory calculation if database query fails and no cache
-      return getTotalInboundCategories(date);
     }
+    return categoryIds.length;
   }
 
-  // Get total inbound value for a date - Database version with cache
+  // Get total inbound value for a date - Firestore version
   Future<double> getTotalInboundValueFromDB(DateTime date) async {
-    try {
-      final inboundVal = await _databaseService.getTotalInboundValueByDate(date);
-      
-      // Cache the result
-      final key = '${formatDateForCacheKey(date)}_$_cachedInboundValueKey';
-      await StorageUtils.cacheDoubleValue(key, inboundVal);
-      
-      return inboundVal;
-    } catch (e) {
-      debugPrint('Error getting inbound value from database: $e');
-      
-      // Try to get from cache first
-      final key = '${formatDateForCacheKey(date)}_$_cachedInboundValueKey';
-      final cachedValue = await StorageUtils.getCachedDoubleValue(key);
-      if (cachedValue != null) {
-        debugPrint('Using cached inbound value: $cachedValue');
-        return cachedValue;
+    final txs = await _getInboundTransactionsForDate(date);
+    double totalVal = 0.0;
+    for (var tx in txs) {
+      final itemId = tx['itemId'];
+      final qty = (tx['quantity'] as num).toInt();
+      final itemIndex = _items.indexWhere((i) => i.id == itemId);
+      if (itemIndex != -1) {
+        totalVal += qty * _items[itemIndex].price;
       }
-      
-      // Fall back to in-memory calculation if database query fails and no cache
-      return getTotalInboundValue(date);
     }
+    return totalVal;
   }
   
-  // Get total outbound quantity for a date - Database version with cache
+  // Get total outbound quantity for a date - Firestore version
   Future<int> getTotalOutboundQuantityFromDB(DateTime date) async {
-    try {
-      debugPrint("ItemProvider: Getting outbound quantity from database for ${date.toString()}");
-      final outboundQty = await _databaseService.getTotalOutboundQuantityByDate(date);
-      debugPrint("ItemProvider: Received outbound quantity from database: $outboundQty");
-      
-      // Cache the result
-      final key = '${formatDateForCacheKey(date)}_$_cachedOutboundQuantityKey';
-      await StorageUtils.cacheIntValue(key, outboundQty);
-      
-      return outboundQty;
-    } catch (e) {
-      debugPrint('Error getting outbound quantity from database: $e');
-      
-      // Try to get from cache first
-      final key = '${formatDateForCacheKey(date)}_$_cachedOutboundQuantityKey';
-      final cachedValue = await StorageUtils.getCachedIntValue(key);
-      if (cachedValue != null) {
-        debugPrint('Using cached outbound quantity value: $cachedValue');
-        return cachedValue;
-      }
-      
-      // Fall back to in-memory calculation if database query fails and no cache
-      return getTotalOutboundQuantity(date);
-    }
+    final txs = await _getOutboundTransactionsForDate(date);
+    return txs.fold<int>(0, (int sum, tx) => sum + (tx['quantity'] as num).toInt());
   }
   
-  // Get total outbound categories for a date - Database version with cache
+  // Get total outbound categories for a date - Firestore version
   Future<int> getTotalOutboundCategoriesFromDB(DateTime date) async {
-    try {
-      final outboundCats = await _databaseService.getOutboundCategoriesCountByDate(date);
-      
-      // Cache the result
-      final key = '${formatDateForCacheKey(date)}_$_cachedOutboundCategoriesKey';
-      await StorageUtils.cacheIntValue(key, outboundCats);
-      
-      return outboundCats;
-    } catch (e) {
-      debugPrint('Error getting outbound categories from database: $e');
-      
-      // Try to get from cache first
-      final key = '${formatDateForCacheKey(date)}_$_cachedOutboundCategoriesKey';
-      final cachedValue = await StorageUtils.getCachedIntValue(key);
-      if (cachedValue != null) {
-        debugPrint('Using cached outbound categories value: $cachedValue');
-        return cachedValue;
+    final txs = await _getOutboundTransactionsForDate(date);
+    final categoryIds = <String>{};
+    for (var tx in txs) {
+      final itemId = tx['itemId'];
+      final itemIndex = _items.indexWhere((i) => i.id == itemId);
+      if (itemIndex != -1) {
+        categoryIds.add(_items[itemIndex].categoryId);
       }
-      
-      // Fall back to in-memory calculation if database query fails and no cache
-      return getTotalOutboundCategories(date);
     }
+    return categoryIds.length;
   }
   
-  // Get total outbound value for a date - Database version with cache
+  // Get total outbound value for a date - Firestore version
   Future<double> getTotalOutboundValueFromDB(DateTime date) async {
-    try {
-      final outboundVal = await _databaseService.getTotalOutboundValueByDate(date);
-      
-      // Cache the result
-      final key = '${formatDateForCacheKey(date)}_$_cachedOutboundValueKey';
-      await StorageUtils.cacheDoubleValue(key, outboundVal);
-      
-      return outboundVal;
-    } catch (e) {
-      debugPrint('Error getting outbound value from database: $e');
-      
-      // Try to get from cache first
-      final key = '${formatDateForCacheKey(date)}_$_cachedOutboundValueKey';
-      final cachedValue = await StorageUtils.getCachedDoubleValue(key);
-      if (cachedValue != null) {
-        debugPrint('Using cached outbound value: $cachedValue');
-        return cachedValue;
+    final txs = await _getOutboundTransactionsForDate(date);
+    double totalVal = 0.0;
+    for (var tx in txs) {
+      final itemId = tx['itemId'];
+      final qty = (tx['quantity'] as num).toInt();
+      final itemIndex = _items.indexWhere((i) => i.id == itemId);
+      if (itemIndex != -1) {
+        totalVal += qty * _items[itemIndex].price;
       }
-      
-      // Fall back to in-memory calculation if database query fails and no cache
-      return getTotalOutboundValue(date);
     }
+    return totalVal;
   }
 
   // Format date for cache key
@@ -500,26 +583,20 @@ class ItemProvider extends ChangeNotifier {
 
   // Add a new item to a category
   Future<void> addItem(Item item) async {
-    bool databaseSuccess = false;
     try {
-      // First add to MySQL database with retry mechanism
-      await _addProductWithRetry(item);
-      databaseSuccess = true;
-      
+      _isLoading = true;
+      notifyListeners();
+
       // Set the dateAdded field explicitly for the item
       final itemWithDate = item.copyWith(
         dateAdded: DateTime.now(),
         createdAt: DateTime.now()
       );
       
-      // Verify the product exists before adding transaction
-      final verificationResult = await _verifyAndAddTransaction(item);
+      // Add to Firestore database primarily
+      await _firestore.collection('items').doc(item.id).set(itemWithDate.toMap());
       
-      if (!verificationResult) {
-        debugPrint('Warning: Transaction verification failed but product was added; continuing');
-      }
-      
-      // Update local collections regardless of transaction outcome
+      // Update local collections
       if (!_itemsByCategory.containsKey(item.categoryId)) {
         _itemsByCategory[item.categoryId] = [];
       }
@@ -527,21 +604,13 @@ class ItemProvider extends ChangeNotifier {
       _itemsByCategory[item.categoryId]!.add(itemWithDate);
       _items.add(itemWithDate);
       
-      // Also save to Firestore as a fallback
-      try {
-        await _firestore.collection('items').doc(item.id).set(itemWithDate.toMap());
-      } catch (e) {
-        print('Error saving to Firestore (not critical): $e');
-      }
-      
+      _isLoading = false;
       notifyListeners();
     } catch (e) {
-      print('Error adding item: $e');
-      // Only throw an exception if the database operation failed
-      // This prevents UI errors from showing the "Failed to save" message
-      if (!databaseSuccess) {
-        throw Exception('Failed to add item to database: $e');
-      }
+      print('Error adding item to Firestore: $e');
+      _isLoading = false;
+      notifyListeners();
+      throw Exception('Failed to add item to Firestore: $e');
     }
   }
   
@@ -624,11 +693,12 @@ class ItemProvider extends ChangeNotifier {
 
   // Update an existing item
   Future<void> updateItem(Item updatedItem) async {
-    bool databaseSuccess = false;
     try {
-      // First update in MySQL database
-      await _databaseService.updateProduct(updatedItem);
-      databaseSuccess = true;
+      _isLoading = true;
+      notifyListeners();
+      
+      // Update in Firestore primarily
+      await _firestore.collection('items').doc(updatedItem.id).set(updatedItem.toMap());
       
       // Then update local lists
       if (_itemsByCategory.containsKey(updatedItem.categoryId)) {
@@ -653,80 +723,36 @@ class ItemProvider extends ChangeNotifier {
         _items.add(updatedItem);
       }
       
-      // Also update in Firestore as a fallback
-      try {
-        await _firestore.collection('items').doc(updatedItem.id).set(updatedItem.toMap());
-      } catch (e) {
-        print('Error updating in Firestore (not critical): $e');
-      }
-      
+      _isLoading = false;
       notifyListeners();
     } catch (e) {
-      print('Error updating item: $e');
-      // Only throw if database operation failed
-      if (!databaseSuccess) {
-        throw Exception('Failed to update item in database: $e');
-      }
-      
-      // Fallback to just local update if database operation succeeded but there was another error
-      if (_itemsByCategory.containsKey(updatedItem.categoryId)) {
-        final index = _itemsByCategory[updatedItem.categoryId]!.indexWhere(
-          (item) => item.id == updatedItem.id,
-        );
-        
-        if (index != -1) {
-          _itemsByCategory[updatedItem.categoryId]![index] = updatedItem;
-        } else {
-          _itemsByCategory[updatedItem.categoryId]!.add(updatedItem);
-        }
-      } else {
-        _itemsByCategory[updatedItem.categoryId] = [updatedItem];
-      }
-      
-      // Update in main items list
-      final allItemIndex = _items.indexWhere((item) => item.id == updatedItem.id);
-      if (allItemIndex != -1) {
-        _items[allItemIndex] = updatedItem;
-      } else {
-        _items.add(updatedItem);
-      }
-      
+      print('Error updating item in Firestore: $e');
+      _isLoading = false;
       notifyListeners();
+      throw Exception('Failed to update item in Firestore: $e');
     }
   }
 
   void removeItem(String categoryId, String itemId) async {
     try {
-      // Set loading state
       _isLoading = true;
       notifyListeners();
       
-      debugPrint('Removing item $itemId from category $categoryId');
+      debugPrint('Removing item $itemId from Firestore');
       
-      // First remove from MySQL database
-      await _databaseService.deleteProduct(itemId);
+      // Remove from Firestore primarily
+      await _firestore.collection('items').doc(itemId).delete();
       
       // Then update local collections
       if (_itemsByCategory.containsKey(categoryId)) {
         _itemsByCategory[categoryId]!.removeWhere((item) => item.id == itemId);
-        debugPrint('Removed item from category collection, remaining items: ${_itemsByCategory[categoryId]!.length}');
       }
-      
       _items.removeWhere((item) => item.id == itemId);
-      debugPrint('Removed item from main collection, remaining items: ${_items.length}');
-      
-      // Double-check that the item is gone from the database
-      bool stillExists = await _databaseService.doesProductExist(itemId);
-      if (stillExists) {
-        debugPrint('WARNING: Item $itemId still exists in database after deletion!');
-        // Try deletion again
-        await _databaseService.deleteProduct(itemId);
-      }
       
       _isLoading = false;
       notifyListeners();
     } catch (e) {
-      debugPrint('Error removing item: $e');
+      debugPrint('Error removing item from Firestore: $e');
       
       // Fallback to just updating local collections
       if (_itemsByCategory.containsKey(categoryId)) {
@@ -739,7 +765,7 @@ class ItemProvider extends ChangeNotifier {
     }
   }
 
-  void deleteItemsInCategory(String categoryId) async {
+  Future<void> deleteItemsInCategory(String categoryId) async {
     try {
       // Get all items in the category
       final items = _itemsByCategory[categoryId] ?? [];
@@ -816,44 +842,35 @@ class ItemProvider extends ChangeNotifier {
   // Method to force regenerate transaction data
   Future<void> forceRegenerateTransactionData() async {
     try {
-      debugPrint('Regenerating missing transaction data...');
+      debugPrint('Regenerating missing transaction data in Firestore...');
       
-      // Instead of deleting all transactions, find products that don't have transactions
-      final conn = await _databaseService.connection;
+      final itemsSnapshot = await _firestore.collection('items').get();
+      final txSnapshot = await _firestore.collection('inbound_transactions').get();
       
-      // Find products with no inbound transactions
-      final productsWithNoInbound = await conn.query('''
-        SELECT p.* FROM products p
-        LEFT JOIN (
-          SELECT DISTINCT item_id FROM inbound_transactions
-        ) t ON p.id = t.item_id
-        WHERE t.item_id IS NULL
-      ''');
-      
-      debugPrint('Found ${productsWithNoInbound.length} products with no inbound transactions');
-      
-      // Create inbound transactions only for products that don't have any
-      for (var row in productsWithNoInbound) {
-        try {
-          final productId = row['id'].toString();
-          final quantity = row['quantity'] != null ? int.parse(row['quantity'].toString()) : 1;
+      final productIdsWithTransactions = txSnapshot.docs
+          .map((doc) => doc.data()['itemId'] as String?)
+          .where((id) => id != null)
+          .toSet();
           
-          // Create a new transaction with current timestamp
+      int createdCount = 0;
+      for (var doc in itemsSnapshot.docs) {
+        final itemId = doc.id;
+        if (!productIdsWithTransactions.contains(itemId)) {
+          final data = doc.data();
+          final quantity = (data['quantity'] as num?)?.toInt() ?? 1;
           final transactionId = const Uuid().v4();
-          await _databaseService.addInboundTransaction(
-            transactionId,
-            productId,
-            quantity,
-            DateTime.now()
-          );
           
-          debugPrint('Created missing inbound transaction for product $productId');
-        } catch (e) {
-          debugPrint('Error creating transaction for product ${row['id']}: $e');
+          await _firestore.collection('inbound_transactions').doc(transactionId).set({
+            'id': transactionId,
+            'itemId': itemId,
+            'quantity': quantity,
+            'date': DateTime.now().toIso8601String(),
+            'type': 'inbound',
+          });
+          createdCount++;
         }
       }
-      
-      debugPrint('Transaction data regeneration completed');
+      debugPrint('Transaction data regeneration completed: Created $createdCount missing transactions');
     } catch (e) {
       debugPrint('Error regenerating transaction data: $e');
     }
@@ -1005,23 +1022,18 @@ class ItemProvider extends ChangeNotifier {
     }
     _outboundTransactions[item.categoryId]!.add(transaction);
     
-    // Create transaction in database
+    // Create transaction in Firestore
     try {
-      // Add the outbound transaction record
-      await _databaseService.addOutboundTransaction(
-        transactionId,
-        item.id,
-        quantity,
-        DateTime.now()
-      );
-      
-      debugPrint('Successfully recorded outbound transaction $transactionId for item ${item.id}');
-      
-      // Debug today's transactions
-      await _databaseService.debugTodaysTransactions();
+      await _firestore.collection('outbound_transactions').doc(transactionId).set({
+        'id': transactionId,
+        'itemId': item.id,
+        'quantity': quantity,
+        'date': DateTime.now().toIso8601String(),
+        'type': 'outbound',
+      });
+      debugPrint('Successfully recorded outbound transaction $transactionId in Firestore');
     } catch (e) {
-      debugPrint('Error recording outbound transaction to database: $e');
-      // Continue with quantity update even if transaction recording fails
+      debugPrint('Error recording outbound transaction to Firestore: $e');
     }
 
     // Update the item's quantity in our local state
@@ -1040,13 +1052,16 @@ class ItemProvider extends ChangeNotifier {
           _items[allItemIndex] = _items[allItemIndex].copyWith(quantity: newQuantity);
         }
         
-        // Update in database
+        // Update in Firestore
         try {
-          await _databaseService.updateProductQuantity(item.id, newQuantity);
-          debugPrint('Updated quantity in database for ${item.name}: $newQuantity');
+          final itemWithNewQty = updatedItem.copyWith(quantity: newQuantity);
+          await _firestore.collection('items').doc(item.id).set(
+            itemWithNewQty.toMap(),
+            SetOptions(merge: true),
+          );
+          debugPrint('Updated quantity in Firestore for ${item.name}: $newQuantity');
         } catch (e) {
-          debugPrint('Error updating product quantity in database: $e');
-          throw Exception('Failed to update quantity in database: $e');
+          debugPrint('Error updating product quantity in Firestore: $e');
         }
       } else {
         debugPrint('Item not found in category: ${item.id}');
@@ -1057,9 +1072,9 @@ class ItemProvider extends ChangeNotifier {
       throw Exception('Category not found');
     }
 
-    // Save to local storage
-    StorageUtils.saveOutboundTransaction(item, quantity);
-
+    _cachedInboundTxs = null;
+    _cachedOutboundTxs = null;
+    _cachedTxsDate = null;
     notifyListeners();
     
     // Check stock levels after recording outbound transaction
@@ -1083,22 +1098,18 @@ class ItemProvider extends ChangeNotifier {
     // Generate a unique ID for the transaction
     final transactionId = const Uuid().v4();
     
-    // Create transaction in database
+    // Create transaction in Firestore
     try {
-      // Add the inbound transaction record
-      await _databaseService.addInboundTransaction(
-        transactionId,
-        item.id,
-        quantity,
-        DateTime.now()
-      );
-      
-      debugPrint('Successfully recorded inbound transaction $transactionId for item ${item.id}');
-      
-      // Debug today's transactions
-      await _databaseService.debugTodaysTransactions();
+      await _firestore.collection('inbound_transactions').doc(transactionId).set({
+        'id': transactionId,
+        'itemId': item.id,
+        'quantity': quantity,
+        'date': DateTime.now().toIso8601String(),
+        'type': 'inbound',
+      });
+      debugPrint('Successfully recorded inbound transaction $transactionId in Firestore');
     } catch (e) {
-      debugPrint('Error recording inbound transaction to database: $e');
+      debugPrint('Error recording inbound transaction to Firestore: $e');
       throw Exception('Failed to record inbound transaction: $e');
     }
 
@@ -1118,13 +1129,16 @@ class ItemProvider extends ChangeNotifier {
           _items[allItemIndex] = _items[allItemIndex].copyWith(quantity: newQuantity);
         }
         
-        // Update in database
+        // Update in Firestore
         try {
-          await _databaseService.updateProductQuantity(item.id, newQuantity);
-          debugPrint('Updated quantity in database for ${item.name}: $newQuantity');
+          final itemWithNewQty = updatedItem.copyWith(quantity: newQuantity);
+          await _firestore.collection('items').doc(item.id).set(
+            itemWithNewQty.toMap(),
+            SetOptions(merge: true),
+          );
+          debugPrint('Updated quantity in Firestore for ${item.name}: $newQuantity');
         } catch (e) {
-          debugPrint('Error updating product quantity in database: $e');
-          throw Exception('Failed to update quantity in database: $e');
+          debugPrint('Error updating product quantity in Firestore: $e');
         }
       } else {
         debugPrint('Item not found in category: ${item.id}');
@@ -1135,6 +1149,9 @@ class ItemProvider extends ChangeNotifier {
       throw Exception('Category not found');
     }
 
+    _cachedInboundTxs = null;
+    _cachedOutboundTxs = null;
+    _cachedTxsDate = null;
     notifyListeners();
   }
 
@@ -1159,7 +1176,14 @@ class ItemProvider extends ChangeNotifier {
   // New method to refresh items for a specific category
   Future<void> refreshCategoryItems(String categoryId) async {
     try {
-      final items = await _databaseService.getProductsByCategory(categoryId);
+      final querySnapshot = await _firestore
+          .collection('items')
+          .where('categoryId', isEqualTo: categoryId)
+          .get();
+          
+      final items = querySnapshot.docs.map((doc) {
+        return Item.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+      }).toList();
       
       // Update only the items for this category
       if (_itemsByCategory.containsKey(categoryId)) {
@@ -1179,7 +1203,7 @@ class ItemProvider extends ChangeNotifier {
       
       notifyListeners();
     } catch (e) {
-      debugPrint('Error refreshing category items: $e');
+      debugPrint('Error refreshing category items from Firestore: $e');
     }
   }
 

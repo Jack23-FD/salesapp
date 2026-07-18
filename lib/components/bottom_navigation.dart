@@ -381,7 +381,7 @@ class _BottomNavigationState extends State<BottomNavigation>
     _checkLanguage();
     
     // Fixed size to prevent layout shifts
-    final double navBarHeight = 80.0;
+    final double navBarHeight = 92.0;
     final double bottomPadding = MediaQuery.of(context).padding.bottom > 0 ? 8.0 : 0.0;
     final double totalHeight = navBarHeight + bottomPadding;
     
@@ -390,7 +390,6 @@ class _BottomNavigationState extends State<BottomNavigation>
     return SizedBox(
       height: totalHeight,
       child: Container(
-        height: navBarHeight,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: const BorderRadius.only(
@@ -432,11 +431,17 @@ class _BottomNavigationState extends State<BottomNavigation>
           selectedItemColor: Theme.of(context).primaryColor,
           unselectedItemColor: Colors.grey,
           showUnselectedLabels: true,
-          selectedFontSize: 12,
-          unselectedFontSize: 11,
-          selectedLabelStyle:
-              AppTypography.smallButton.copyWith(fontWeight: FontWeight.w600),
-          unselectedLabelStyle: AppTypography.smallButton,
+          selectedFontSize: 11.0,
+          unselectedFontSize: 10.0,
+          selectedLabelStyle: AppTypography.smallButton.copyWith(
+            fontSize: 11.0,
+            height: 1.0,
+            fontWeight: FontWeight.w600,
+          ),
+          unselectedLabelStyle: AppTypography.smallButton.copyWith(
+            fontSize: 10.0,
+            height: 1.0,
+          ),
           items: [
             BottomNavigationBarItem(
               icon: const Icon(Icons.dashboard_outlined),

@@ -28,6 +28,27 @@ class User {
     required this.authProvider,
   });
 
+  static DateTime _parseDateTime(dynamic value) {
+    if (value == null) return DateTime.now();
+    if (value is DateTime) return value;
+    if (value is String) {
+      try {
+        return DateTime.parse(value);
+      } catch (_) {
+        return DateTime.now();
+      }
+    }
+    try {
+      return value.toDate();
+    } catch (_) {
+      try {
+        return DateTime.parse(value.toString());
+      } catch (_) {
+        return DateTime.now();
+      }
+    }
+  }
+
   factory User.fromMap(Map<String, dynamic> map, String id) {
     return User(
       id: id,
@@ -36,8 +57,8 @@ class User {
       companyName: map['companyName'],
       phoneNumber: map['phoneNumber'],
       role: _parseRole(map['role']),
-      createdAt: map['createdAt']?.toDate() ?? DateTime.now(),
-      lastLogin: map['lastLogin']?.toDate() ?? DateTime.now(),
+      createdAt: _parseDateTime(map['createdAt']),
+      lastLogin: _parseDateTime(map['lastLogin']),
       authProvider: map['authProvider'] ?? 'email',
     );
   }

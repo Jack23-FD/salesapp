@@ -35,7 +35,7 @@ class _NewCategoryScreenState extends State<NewCategoryScreen> {
     super.dispose();
   }
 
-  void _saveCategory() {
+  void _saveCategory() async {
     if (_formKey.currentState!.validate()) {
       final category = Category(
         id: const Uuid().v4(),
@@ -46,8 +46,21 @@ class _NewCategoryScreenState extends State<NewCategoryScreen> {
             : null,
       );
 
-      context.read<CategoryProvider>().addCategory(category);
-      Navigator.pop(context, true);
+      // Show a loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
+      await context.read<CategoryProvider>().addCategory(category);
+      
+      if (mounted) {
+        // hide loading
+        Navigator.pop(context);
+        // pop screen
+        Navigator.pop(context, true);
+      }
     }
   }
 

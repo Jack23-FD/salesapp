@@ -229,187 +229,189 @@ class _ScannerScreenState extends State<ScannerScreen> {
   }
 
   Widget _buildScannerView() {
-    return Column(
-      children: [
-        const SizedBox(height: 20),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Enter Barcode Manually',
-                style: TextStyle(
-                  color: Color(0xFF333366),
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _manualBarcodeController,
-                      decoration: InputDecoration(
-                        hintText: 'Enter barcode number',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFF333366)),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                      ),
-                      keyboardType: TextInputType.number,
-                      onChanged: (value) {
-                        // Process barcode after it reaches a reasonable length (most barcodes are at least 8 chars)
-                        if (value.length >= 8) {
-                          _onBarcodeDetected(value);
-                        }
-                      },
-                      onSubmitted: (value) {
-                        // Also process on submission for shorter barcodes
-                        if (value.isNotEmpty) {
-                          _onBarcodeDetected(value);
-                        }
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    onPressed: () {
-                      if (_manualBarcodeController.text.isNotEmpty) {
-                        _onBarcodeDetected(_manualBarcodeController.text);
-                      }
-                    },
-                    icon: const Icon(Icons.search, color: Color(0xFF333366)),
-                    tooltip: 'Process barcode',
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 20),
-          height: 1,
-          color: Colors.grey.shade300,
-        ),
-        const SizedBox(height: 16),
-        const Text(
-          'OR Scan with Camera',
-          style: TextStyle(
-            color: Color(0xFF333366),
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 16),
-        Container(
-          height: MediaQuery.of(context).size.height * 0.35,
-          margin: const EdgeInsets.symmetric(horizontal: 20),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFF333366), width: 2),
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(14),
-            child: Stack(
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          const SizedBox(height: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                mobile_scanner.MobileScanner(
-                  controller: _controller.controller,
-                  onDetect: (capture) {
-                    final List<mobile_scanner.Barcode> barcodes =
-                        capture.barcodes;
-                    for (final barcode in barcodes) {
-                      if (barcode.rawValue != null && !_showResult) {
-                        _onBarcodeDetected(barcode.rawValue!);
-                      }
-                    }
-                  },
+                const Text(
+                  'Enter Barcode Manually',
+                  style: TextStyle(
+                    color: Color(0xFF333366),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-                const ScannerFrame(),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _manualBarcodeController,
+                        decoration: InputDecoration(
+                          hintText: 'Enter barcode number',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Color(0xFF333366)),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                        ),
+                        keyboardType: TextInputType.number,
+                        onChanged: (value) {
+                          // Process barcode after it reaches a reasonable length (most barcodes are at least 8 chars)
+                          if (value.length >= 8) {
+                            _onBarcodeDetected(value);
+                          }
+                        },
+                        onSubmitted: (value) {
+                          // Also process on submission for shorter barcodes
+                          if (value.isNotEmpty) {
+                            _onBarcodeDetected(value);
+                          }
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      onPressed: () {
+                        if (_manualBarcodeController.text.isNotEmpty) {
+                          _onBarcodeDetected(_manualBarcodeController.text);
+                        }
+                      },
+                      icon: const Icon(Icons.search, color: Color(0xFF333366)),
+                      tooltip: 'Process barcode',
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
-        ),
-        const SizedBox(height: 20),
-        const Text(
-          'Place the barcode inside the frame',
-          style: TextStyle(
-            color: Color(0xFF333366),
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
+          const SizedBox(height: 16),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 20),
+            height: 1,
+            color: Colors.grey.shade300,
           ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 24),
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 20),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey.shade200),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.05),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-            ],
+          const SizedBox(height: 16),
+          const Text(
+            'OR Scan with Camera',
+            style: TextStyle(
+              color: Color(0xFF333366),
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              ScannerControlButton(
-                icon: _controller.isTorchOn ? Icons.flash_off : Icons.flash_on,
-                label: _controller.isTorchOn ? 'Flash Off' : 'Flash On',
-                onTap: () {
-                  setState(() {
-                    _controller.toggleTorch();
-                  });
-                },
+          const SizedBox(height: 16),
+          Container(
+            height: MediaQuery.of(context).size.height * 0.35,
+            margin: const EdgeInsets.symmetric(horizontal: 20),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFF333366), width: 2),
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: Stack(
+                children: [
+                  mobile_scanner.MobileScanner(
+                    controller: _controller.controller,
+                    onDetect: (capture) {
+                      final List<mobile_scanner.Barcode> barcodes =
+                          capture.barcodes;
+                      for (final barcode in barcodes) {
+                        if (barcode.rawValue != null && !_showResult) {
+                          _onBarcodeDetected(barcode.rawValue!);
+                        }
+                      }
+                    },
+                  ),
+                  const ScannerFrame(),
+                ],
               ),
-              Container(
-                width: 1,
-                height: 40,
-                color: Colors.grey.shade200,
-              ),
-              ScannerControlButton(
-                icon: _controller.isBackCamera
-                    ? Icons.camera_front
-                    : Icons.camera_rear,
-                label: _controller.isBackCamera ? 'Front' : 'Back',
-                onTap: () {
-                  setState(() {
-                    _controller.switchCamera();
-                  });
-                },
-              ),
-              Container(
-                width: 1,
-                height: 40,
-                color: Colors.grey.shade200,
-              ),
-              ScannerControlButton(
-                icon: Icons.image,
-                label: 'Gallery',
-                onTap: _handleGalleryScanning,
-              ),
-            ],
+            ),
           ),
-        ),
-      ],
+          const SizedBox(height: 20),
+          const Text(
+            'Place the barcode inside the frame',
+            style: TextStyle(
+              color: Color(0xFF333366),
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey.shade200),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ScannerControlButton(
+                  icon: _controller.isTorchOn ? Icons.flash_off : Icons.flash_on,
+                  label: _controller.isTorchOn ? 'Flash Off' : 'Flash On',
+                  onTap: () {
+                    setState(() {
+                      _controller.toggleTorch();
+                    });
+                  },
+                ),
+                Container(
+                  width: 1,
+                  height: 40,
+                  color: Colors.grey.shade200,
+                ),
+                ScannerControlButton(
+                  icon: _controller.isBackCamera
+                      ? Icons.camera_front
+                      : Icons.camera_rear,
+                  label: _controller.isBackCamera ? 'Front' : 'Back',
+                  onTap: () {
+                    setState(() {
+                      _controller.switchCamera();
+                    });
+                  },
+                ),
+                Container(
+                  width: 1,
+                  height: 40,
+                  color: Colors.grey.shade200,
+                ),
+                ScannerControlButton(
+                  icon: Icons.image,
+                  label: 'Gallery',
+                  onTap: _handleGalleryScanning,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 

@@ -22,28 +22,33 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   final List<WalkthroughItem> _walkthroughItems = [
     WalkthroughItem(
-      title: 'Lorem Ipsum de lore ko ipsum de lo',
+      title: 'Track Your Inventory',
       description:
-          'Plan, manage, and celebrate your events effortlessly what would you like to do?',
+          'Monitor stock levels, add items, and organize your inventory categories in real-time.',
       color: const Color(0xFFE0C6FF),
+      icon: Icons.inventory_2_outlined,
+      imagePath: 'assets/images/box.jpg',
     ),
     WalkthroughItem(
-      title: 'Lorem Ipsum de lore ko ipsum de lo',
+      title: 'Manage Sales & Invoices',
       description:
-          'Plan, manage, and celebrate your events effortlessly what would you like to do?',
+          'Generate professional PDF invoices on the go and track customer orders easily.',
       color: const Color(0xFFCED4FF),
+      icon: Icons.receipt_long_outlined,
     ),
     WalkthroughItem(
-      title: 'Lorem Ipsum de lore ko ipsum de lo',
+      title: 'Admin & Staff Controls',
       description:
-          'Plan, manage, and celebrate your events effortlessly what would you like to do?',
+          'Assign roles to your staff and monitor shop statistics from a secure admin dashboard.',
       color: const Color(0xFFBFC8FF),
+      icon: Icons.admin_panel_settings_outlined,
     ),
     WalkthroughItem(
-      title: 'Lorem Ipsum de lore ko ipsum de lo',
+      title: 'Streamline Your Business',
       description:
-          'Plan, manage, and celebrate your events effortlessly what would you like to do?',
+          'Join us and simplify your sales, invoicing, and inventory operations today.',
       color: const Color(0xFFD8C0FF),
+      icon: Icons.rocket_launch_outlined,
     ),
   ];
 
@@ -260,11 +265,15 @@ class WalkthroughItem {
   final String title;
   final String description;
   final Color color;
+  final IconData icon;
+  final String? imagePath;
 
   WalkthroughItem({
     required this.title,
     required this.description,
     required this.color,
+    required this.icon,
+    this.imagePath,
   });
 }
 
@@ -335,8 +344,29 @@ class WalkthroughPage extends StatelessWidget {
                                   radius: 0.8,
                                 ),
                               ),
-                              child: CustomPaint(
-                                painter: CurvePainter(color: item.color),
+                              child: Stack(
+                                children: [
+                                  CustomPaint(
+                                    painter: CurvePainter(color: item.color),
+                                  ),
+                                  Center(
+                                    child: item.imagePath != null
+                                        ? ClipRRect(
+                                            borderRadius: BorderRadius.circular(16),
+                                            child: Image.asset(
+                                              item.imagePath!,
+                                              width: 140,
+                                              height: 140,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          )
+                                        : Icon(
+                                            item.icon,
+                                            size: 72,
+                                            color: Colors.indigo,
+                                          ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),

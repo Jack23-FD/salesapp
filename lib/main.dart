@@ -118,22 +118,8 @@ void main() async {
   // Simply create the text styles - they will be cached automatically
   debugPrint("Preloading Google Fonts: Urbanist");
 
-  // Initialize the MySQL database with shorter timeout
-  final dbService = MySqlDatabaseService();
-  try {
-    print('Initializing MySQL database...');
-    // Don't block app startup on database initialization
-    dbService.initializeDatabase().timeout(
-      const Duration(seconds: 5),
-      onTimeout: () {
-        print('Database initialization timeout - will initialize later');
-        return Future.value();
-      },
-    );
-    print('MySQL database initialization started');
-  } catch (e) {
-    print('Error initializing MySQL database: $e');
-  }
+  // Startup MySQL initialization disabled in favor of Cloud Firestore
+  print('MySQL startup initialization disabled (migrated to Cloud Firestore)');
 
   // Continue with the rest of initialization
   bool firebaseInitialized = false;
@@ -141,11 +127,11 @@ void main() async {
   try {
     await Firebase.initializeApp(
       options: const FirebaseOptions(
-        apiKey: "AIzaSyCEqP9mrMl-Iqnf0amaAsqXxTrNzuk3RmU",
-        appId: "1:261211170702:android:d633cf51a41bff213f26df",
-        messagingSenderId: "261211170702",
-        projectId: "salesapp-praskla",
-        storageBucket: "salesapp-praskla.firebasestorage.app",
+        apiKey: "AIzaSyDyB8egZY0hRJ5I3A7g1YV1gHCztDc25nk",
+        appId: "1:509978989502:android:437b547417e33e10319fef",
+        messagingSenderId: "509978989502",
+        projectId: "salesapp-c530f",
+        storageBucket: "salesapp-c530f.firebasestorage.app",
       ),
     );
 

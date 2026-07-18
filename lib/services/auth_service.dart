@@ -5,9 +5,17 @@ import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user.dart' as app_models;
 
 class AuthService {
-  final firebase_auth.FirebaseAuth _auth = firebase_auth.FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  firebase_auth.FirebaseAuth get _auth => firebase_auth.FirebaseAuth.instance;
+  FirebaseFirestore get _firestore => FirebaseFirestore.instance;
+  GoogleSignIn get _googleSignIn => GoogleSignIn.instance;
+  bool _googleSignInInitialized = false;
+
+  Future<void> _ensureGoogleSignInInitialized() async {
+    if (!_googleSignInInitialized) {
+      await _googleSignIn.initialize();
+      _googleSignInInitialized = true;
+    }
+  }
 
   // Get current user
   firebase_auth.User? get currentUser => _auth.currentUser;
@@ -174,8 +182,10 @@ class AuthService {
   // Sign in with Google
   Future<firebase_auth.UserCredential> signInWithGoogle({app_models.UserRole role = app_models.UserRole.staff}) async {
     try {
+      await _ensureGoogleSignInInitialized();
+
       // Trigger the authentication flow
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      final GoogleSignInAccount? googleUser = await _googleSignIn.authenticate();
 
       if (googleUser == null) {
         throw firebase_auth.FirebaseAuthException(
@@ -185,12 +195,10 @@ class AuthService {
       }
 
       // Obtain the auth details from the request
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
 
       // Create a new credential
       final credential = firebase_auth.GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
@@ -348,8 +356,9 @@ class AuthService {
   // Sign out
   Future<void> signOut() async {
     try {
-      // Sign out from Google if signed in with Google
+      await _ensureGoogleSignInInitialized();
       await _googleSignIn.signOut();
+      
       // Sign out from Firebase
       await _auth.signOut();
       await _saveLoginState(false);

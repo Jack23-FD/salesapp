@@ -31,6 +31,27 @@ class Item {
     this.imageUrl,
   });
 
+  static DateTime _parseDateTime(dynamic value) {
+    if (value == null) return DateTime.now();
+    if (value is DateTime) return value;
+    if (value is String) {
+      try {
+        return DateTime.parse(value);
+      } catch (_) {
+        return DateTime.now();
+      }
+    }
+    try {
+      return value.toDate();
+    } catch (_) {
+      try {
+        return DateTime.parse(value.toString());
+      } catch (_) {
+        return DateTime.now();
+      }
+    }
+  }
+
   factory Item.fromMap(Map<String, dynamic> map, String id) {
     return Item(
       id: id,
@@ -39,12 +60,8 @@ class Item {
       quantity: map['quantity'] is int ? map['quantity'] : (map['quantity'] as num?)?.toInt() ?? 0,
       unit: map['unit'] ?? 'pcs',
       price: (map['price'] ?? 0.0).toDouble(),
-      createdAt: map['createdAt']?.toDate() ?? DateTime.now(),
-      dateAdded: map['dateAdded'] != null 
-          ? map['dateAdded'] is DateTime 
-              ? map['dateAdded'] 
-              : DateTime.parse(map['dateAdded'].toString())
-          : DateTime.now(),
+      createdAt: _parseDateTime(map['createdAt']),
+      dateAdded: _parseDateTime(map['dateAdded']),
       barcode: map['barcode'],
       minLevel: map['minLevel'] != null ? (map['minLevel'] as num).toDouble() : null,
       type: map['type'] ?? 'inbound',

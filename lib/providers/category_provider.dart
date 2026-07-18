@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/category.dart';
 import '../utils/storage_utils.dart';
-import '../services/mysql_database_service.dart';
 import '../models/category.dart' as app_models;
 
 class CategoryProvider extends ChangeNotifier {
   final List<Category> _categories = [];
   String _sortField = 'name';
   bool _sortAscending = true;
-  final MySqlDatabaseService _databaseService = MySqlDatabaseService();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   bool _isLoading = false;
   bool _hasInitialLoad = false;
 
@@ -44,45 +44,51 @@ class CategoryProvider extends ChangeNotifier {
   }
 
   CategoryProvider() {
-    print('CategoryProvider initialized');
+    print('CategoryProvider initialized with Firestore');
     _loadCategoriesFromDatabase();
   }
 
-  // Load categories from MySQL database
+  // Load categories from Firestore database
   Future<void> _loadCategoriesFromDatabase() async {
     try {
       _isLoading = true;
-      if (_hasInitialLoad) {
-        // If we've already loaded once, don't block the UI with a notification
-        // This is just a refresh
-      } else {
+      if (!_hasInitialLoad) {
         notifyListeners(); // Notify loading state on first load
       }
       
-      print('Loading categories from MySQL database');
-      final databaseCategories = await _databaseService.getCategories();
+      print('Loading categories from Cloud Firestore...');
+      final QuerySnapshot querySnapshot = await _firestore
+          .collection('categories')
+          .get()
+          .timeout(const Duration(seconds: 4));
 
       // Even if we get empty results, update loading state to prevent endless loading
       _isLoading = false;
       _hasInitialLoad = true;
 
-      if (databaseCategories.isNotEmpty) {
+      if (querySnapshot.docs.isNotEmpty) {
         _categories.clear();
-        _categories.addAll(databaseCategories);
-        print('Loaded ${databaseCategories.length} categories from MySQL database');
+        for (var doc in querySnapshot.docs) {
+          final data = doc.data() as Map<String, dynamic>;
+          // Ensure ID is set in the map if fromMap expects it
+          if (!data.containsKey('id')) {
+            data['id'] = doc.id;
+          }
+          _categories.add(Category.fromMap(data));
+        }
+        print('Loaded ${_categories.length} categories from Firestore');
         notifyListeners();
       } else {
-        print('No categories found in MySQL database');
-        // Don't block on local storage if database returns empty
+        print('No categories found in Firestore, checking fallback...');
         _loadCategoriesFromStorage();
         notifyListeners();
       }
     } catch (e) {
-      print('Error loading categories from MySQL database: $e');
+      print('Error loading categories from Firestore: $e');
       _isLoading = false;
       _hasInitialLoad = true; // Mark as loaded even on error to prevent infinite loading
       notifyListeners();
-      // Fallback to local storage if database fails
+      // Fallback to local storage if Firestore fails
       _loadCategoriesFromStorage();
     }
   }
@@ -100,15 +106,36 @@ class CategoryProvider extends ChangeNotifier {
       } else {
         print('No categories found in local storage');
         
-        // If no categories found anywhere, add a default category to prevent UI issues
+        // If no categories found anywhere, add fallback test categories
         if (_categories.isEmpty) {
-          final defaultCategory = app_models.Category(
-            id: 'default_category',
-            name: 'Default Category',
-            description: 'Default category created automatically',
-          );
-          _categories.add(defaultCategory);
-          print('Added default category as fallback');
+          final testCategories = [
+            app_models.Category(
+              id: 'cat_beverages',
+              name: 'Beverages',
+              description: 'Soft drinks, juices, water, teas, and coffees',
+              icon: Icons.local_drink_outlined,
+            ),
+            app_models.Category(
+              id: 'cat_snacks',
+              name: 'Snacks',
+              description: 'Chips, biscuits, cookies, nuts, and quick bites',
+              icon: Icons.fastfood_outlined,
+            ),
+            app_models.Category(
+              id: 'cat_electronics',
+              name: 'Electronics',
+              description: 'Mobile phones, chargers, headphones, and accessories',
+              icon: Icons.devices_outlined,
+            ),
+            app_models.Category(
+              id: 'cat_clothing',
+              name: 'Clothing',
+              description: 'Shirts, pants, shoes, and apparel',
+              icon: Icons.checkroom_outlined,
+            ),
+          ];
+          _categories.addAll(testCategories);
+          print('Added mock test categories as fallback');
         }
       }
       
@@ -124,45 +151,45 @@ class CategoryProvider extends ChangeNotifier {
   }
 
   // Add a new category
-  void addCategory(Category category) async {
+  Future<void> addCategory(Category category) async {
     try {
-      // Add to MySQL database
-      await _databaseService.addCategory(category);
+      // Add to Firestore database
+      await _firestore.collection('categories').doc(category.id).set(category.toMap());
       
       // Add to local list
       _categories.add(category);
       
       // Also save to local storage as backup
-      StorageUtils.saveCategory(category);
+      await StorageUtils.saveCategory(category);
 
       notifyListeners();
     } catch (e) {
       print('Error adding category: $e');
       // Fallback to just local storage
       _categories.add(category);
-      StorageUtils.saveCategory(category);
+      await StorageUtils.saveCategory(category);
       notifyListeners();
     }
   }
 
   // Remove category
-  void removeCategory(String id) async {
+  Future<void> removeCategory(String id) async {
     try {
-      // Remove from MySQL database
-      await _databaseService.deleteCategory(id);
+      // Remove from Firestore database
+      await _firestore.collection('categories').doc(id).delete();
       
       // Remove from local list
       _categories.removeWhere((category) => category.id == id);
       
       // Remove from local storage
-      StorageUtils.deleteCategory(id);
+      await StorageUtils.deleteCategory(id);
 
       notifyListeners();
     } catch (e) {
       print('Error removing category: $e');
       // Fallback to just local storage
       _categories.removeWhere((category) => category.id == id);
-      StorageUtils.deleteCategory(id);
+      await StorageUtils.deleteCategory(id);
       notifyListeners();
     }
   }
@@ -182,9 +209,9 @@ class CategoryProvider extends ChangeNotifier {
       _categories.clear();
       _categories.addAll(updatedCategories);
 
-      // Save all categories to MySQL database
+      // Save all categories to Firestore
       for (var category in updatedCategories) {
-        await _databaseService.updateCategory(category);
+        await _firestore.collection('categories').doc(category.id).set(category.toMap());
       }
       
       // Also save to local storage as backup

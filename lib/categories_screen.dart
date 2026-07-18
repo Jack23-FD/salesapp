@@ -56,6 +56,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         },
       );
       
+      if (!mounted) return;
+      
       // Also force reload items to get fresh category references
       final itemProvider = Provider.of<ItemProvider>(context, listen: false);
       await itemProvider.reloadFromDatabase().timeout(
@@ -66,11 +68,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         },
       );
       
-      if (mounted) {
-        setState(() {
-          // Refresh UI after loading categories
-        });
-      }
+      if (!mounted) return;
+      
+      setState(() {
+        // Refresh UI after loading categories
+      });
     } catch (e) {
       print('Error loading categories in categories screen: $e');
       if (mounted) {
@@ -95,12 +97,12 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               child: Text(LocalizationService.translate('common.cancel')),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 // Delete all items in the category first
-                context.read<ItemProvider>().deleteItemsInCategory(category.id);
+                await context.read<ItemProvider>().deleteItemsInCategory(category.id);
                 // Then delete the category
-                context.read<CategoryProvider>().removeCategory(category.id);
-                Navigator.pop(context);
+                await context.read<CategoryProvider>().removeCategory(category.id);
+                if (context.mounted) Navigator.pop(context);
               },
               child: Text(
                 LocalizationService.translate('common.delete'),
@@ -793,6 +795,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         right: 16,
                         bottom: 16,
                         child: FloatingActionButton(
+                          heroTag: 'categories_fab',
                           onPressed: () {
                             Navigator.push(
                               context,

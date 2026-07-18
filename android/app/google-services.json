@@ -1,41 +1,33 @@
 {
   "project_info": {
-    "project_number": "261211170702",
-    "project_id": "salesapp-praskla",
-    "storage_bucket": "salesapp-praskla.firebasestorage.app"
+    "project_number": "509978989502",
+    "project_id": "salesapp-c530f",
+    "storage_bucket": "salesapp-c530f.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:261211170702:android:d633cf51a41bff213f26df",
+        "mobilesdk_app_id": "1:509978989502:android:437b547417e33e10319fef",
         "android_client_info": {
-          "package_name": "com.android.salesapp"
+          "package_name": "com.Prasklatechnology.salesapp"
         }
       },
       "oauth_client": [
         {
-          "client_id": "261211170702-g1ikf09edeeesplbdm1aijbfjvfsmegn.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.android.salesapp",
-            "certificate_hash": "2a64e4c8c74646d3b309215242c021c200d09e10"
-          }
-        },
-        {
-          "client_id": "261211170702-jcm5j7oasbba0eebof24bblcd022qlub.apps.googleusercontent.com",
+          "client_id": "509978989502-sm3jeeshqmhfk0205ub187uildg4kkv6.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCEqP9mrMl-Iqnf0amaAsqXxTrNzuk3RmU"
+          "current_key": "AIzaSyDyB8egZY0hRJ5I3A7g1YV1gHCztDc25nk"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "261211170702-jcm5j7oasbba0eebof24bblcd022qlub.apps.googleusercontent.com",
+              "client_id": "509978989502-sm3jeeshqmhfk0205ub187uildg4kkv6.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

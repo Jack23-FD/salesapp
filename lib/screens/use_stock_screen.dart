@@ -962,7 +962,7 @@ class _UseStockScreenState extends State<UseStockScreen> {
                           ),
                         ),
                         Expanded(
-                          flex: 1,
+                          flex: 3,
                           child: Text(
                             'Qty',
                             style: GoogleFonts.urbanist(
@@ -1012,7 +1012,7 @@ class _UseStockScreenState extends State<UseStockScreen> {
                             ),
                           ),
                           Expanded(
-                            flex: 1,
+                            flex: 3,
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [

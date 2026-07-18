@@ -16,11 +16,11 @@ class MySqlDatabaseService {
   
   // Database connection settings
   final ConnectionSettings _settings = ConnectionSettings(
-    host: 'salesapp.cobuewuouuev.us-east-1.rds.amazonaws.com',
+    host: '10.145.112.48',
     port: 3306,
-    user: 'admin',
-    password: 'Tharun12345678*',
-    db: 'salesapp',
+    user: 'root',
+    password: 'Jack@123',
+    db: 'kiosk',
   );
   
   // Connection pool to reuse connections
@@ -191,6 +191,7 @@ class MySqlDatabaseService {
         'INSERT INTO categories (id, name, description) VALUES (?, ?, ?)',
         [category.id, category.name, category.description]
       );
+      clearCache();
       await closeConnection();
     } catch (e) {
       debugPrint('Error adding category: $e');
@@ -207,6 +208,7 @@ class MySqlDatabaseService {
         'UPDATE categories SET name = ?, description = ? WHERE id = ?',
         [category.name, category.description, category.id]
       );
+      clearCache();
       await closeConnection();
     } catch (e) {
       debugPrint('Error updating category: $e');
@@ -223,6 +225,7 @@ class MySqlDatabaseService {
       await conn.query('DELETE FROM products WHERE categoryId = ?', [id]);
       // Then delete the category
       await conn.query('DELETE FROM categories WHERE id = ?', [id]);
+      clearCache();
       await closeConnection();
     } catch (e) {
       debugPrint('Error deleting category: $e');
@@ -415,6 +418,7 @@ class MySqlDatabaseService {
         throw Exception('Product was not found after adding/updating');
       }
       
+      clearCache();
       debugPrint('MySQLDatabaseService: Product ${item.id} verified in database');
     } catch (e) {
       debugPrint('MySQLDatabaseService: Error adding/updating product: $e');
@@ -430,6 +434,7 @@ class MySqlDatabaseService {
         'UPDATE products SET productname = ?, category = ?, barcode = ?, price = ?, quantity = ? WHERE id = ?',
         [item.name, item.categoryId, item.barcode, item.price, item.quantity, item.id]
       );
+      clearCache();
     } catch (e) {
       debugPrint('Error updating product: $e');
       rethrow;
@@ -444,6 +449,7 @@ class MySqlDatabaseService {
         'UPDATE products SET quantity = ? WHERE id = ?',
         [quantity, id]
       );
+      clearCache();
     } catch (e) {
       debugPrint('Error updating product quantity: $e');
       rethrow;
@@ -489,6 +495,7 @@ class MySqlDatabaseService {
         if (verification.isNotEmpty) {
           debugPrint('WARNING: Product $id still exists after deletion attempt');
         } else {
+          clearCache();
           debugPrint('Product $id and its transactions successfully deleted');
         }
       } catch (e) {
@@ -677,6 +684,7 @@ class MySqlDatabaseService {
         [id, itemId, quantity, formattedDate]
       );
       
+      clearCache();
       debugPrint('Successfully recorded inbound transaction: ID=$id, Product=$itemId, Quantity=$quantity, Date=$formattedDate');
     } catch (e) {
       debugPrint('Error adding inbound transaction: $e');
@@ -708,6 +716,7 @@ class MySqlDatabaseService {
         [id, itemId, quantity, formattedDate]
       );
       
+      clearCache();
       debugPrint('Successfully recorded outbound transaction: ID=$id, Product=$itemId, Quantity=$quantity, Date=$formattedDate');
     } catch (e) {
       debugPrint('Error adding outbound transaction: $e');
