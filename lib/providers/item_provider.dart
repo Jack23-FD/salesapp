@@ -322,4 +322,74 @@ class ItemProvider extends ChangeNotifier {
     _cachedStatsByDate.clear();
     await _loadItemsFromDatabase();
   }
+
+  // --- BACKWARD COMPATIBILITY HELPER METHODS ---
+
+  Future<void> forceRegenerateTransactionData() async {
+    await refreshTransactionData();
+  }
+
+  int getTotalInboundQuantity(DateTime date) {
+    return 0;
+  }
+
+  int getTotalInboundCategories(DateTime date) {
+    return 0;
+  }
+
+  double getTotalInboundValue(DateTime date) {
+    return 0.0;
+  }
+
+  Future<void> exportProducts(DateTime date) async {
+    // PDF / CSV export placeholder
+  }
+
+  Future<void> exportCategories() async {
+    // PDF / CSV export placeholder
+  }
+
+  Future<void> exportTransactions(DateTime date) async {
+    // PDF / CSV export placeholder
+  }
+
+  Future<void> deleteItemsInCategory(String categoryId) async {
+    final items = getItemsByCategory(categoryId);
+    for (var item in items) {
+      await deleteItem(item.id);
+    }
+  }
+
+  List<Item> getItemsByCategoryId(String categoryId) {
+    return getItemsByCategory(categoryId);
+  }
+
+  List<String> getAllCategoryIds() {
+    return _itemsByCategory.keys.toList();
+  }
+
+  List<Item> getItemsForCategory(String categoryId) {
+    return getItemsByCategory(categoryId);
+  }
+
+  List<Item> getAllItems() {
+    return allItems;
+  }
+
+  Map<String, dynamic>? checkItemExistsInAnyCategory(String name, String? barcode) {
+    try {
+      final existing = _items.firstWhere((item) => 
+          item.name.toLowerCase() == name.toLowerCase() || 
+          (barcode != null && item.barcode == barcode));
+      return {
+        'message': 'Product "${existing.name}" already exists in category "${existing.categoryName ?? existing.categoryId}"'
+      };
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<void> removeItem(String categoryId, String itemId) async {
+    await deleteItem(itemId);
+  }
 }

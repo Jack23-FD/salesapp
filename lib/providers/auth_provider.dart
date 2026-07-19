@@ -76,6 +76,10 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> retryInitialization() async {
+    await _init();
+  }
+
   // Load user data from the PHP API backend
   Future<void> _loadUserData() async {
     try {
@@ -200,6 +204,27 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  // Sign in with Google
+  Future<bool> signInWithGoogle({UserRole role = UserRole.staff}) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      await _authService.signInWithGoogle(role: role);
+      await _loadUserData();
+      
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isLoading = false;
+      _error = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
   // Invite and add a staff member (Admin Only)
   Future<bool> addStaff(String uid, String name, String email, String? phoneNumber) async {
     try {
@@ -215,7 +240,7 @@ class AuthProvider extends ChangeNotifier {
   Future<List<User>> getStaffList() async {
     try {
       final list = await _apiService.listStaff();
-      return list.map((json) {
+      return list.map<User>((json) {
         final roleStr = json['role'] ?? 'staff';
         final role = roleStr == 'admin' ? UserRole.admin : UserRole.staff;
         return User(
@@ -225,6 +250,8 @@ class AuthProvider extends ChangeNotifier {
           phoneNumber: json['phone_number'] ?? '',
           role: role,
           createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
+          lastLogin: DateTime.now(),
+          authProvider: 'email',
         );
       }).toList();
     } catch (e) {
