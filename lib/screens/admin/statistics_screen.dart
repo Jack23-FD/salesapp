@@ -146,6 +146,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       print('Detailed statistics loaded');
     } catch (e) {
       print('Error loading detailed statistics: $e');
+    }
   }
   
   // Load chart data separately and asynchronously
