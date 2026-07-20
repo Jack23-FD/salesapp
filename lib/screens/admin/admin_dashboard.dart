@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/item_provider.dart';
+import '../../providers/category_provider.dart';
 import '../../models/user.dart';
 import '../../services/rbac_service.dart';
 import '../../services/mysql_database_service.dart';
@@ -61,28 +62,33 @@ class _AdminDashboardState extends State<AdminDashboard> {
       // Get today's date for stats
       final today = DateTime.now();
       
-      // Load all statistics from MySQL concurrently for better performance
-      final futures = await Future.wait([
-        _dbService.getTotalProductCount(),
-        _dbService.getTotalCategoryCount(),
-        _dbService.getTotalInboundQuantityByDate(today),
-        _dbService.getTotalOutboundQuantityByDate(today),
-        _dbService.getTotalInboundValueByDate(today),
-        _dbService.getTotalOutboundValueByDate(today),
-      ]);
+      final itemProvider = Provider.of<ItemProvider>(context, listen: false);
+      final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
+
+      // Force reload to get latest data from API backend
+      await itemProvider.reloadFromDatabase();
+      await categoryProvider.reloadFromDatabase();
+
+      final totalItems = itemProvider.getAllItems().length;
+      final totalCategories = categoryProvider.categories.length;
+
+      final itemsAddedToday = await itemProvider.getTotalInboundQuantityFromDB(today);
+      final itemsRemovedToday = await itemProvider.getTotalOutboundQuantityFromDB(today);
+      final inboundValue = await itemProvider.getTotalInboundValueFromDB(today);
+      final outboundValue = await itemProvider.getTotalOutboundValueFromDB(today);
       
       setState(() {
-        _totalItems = futures[0] as int;
-        _totalCategories = futures[1] as int;
-        _itemsAddedToday = futures[2] as int;
-        _itemsRemovedToday = futures[3] as int;
-        _totalValueToday = (futures[4] as double) - (futures[5] as double);
+        _totalItems = totalItems;
+        _totalCategories = totalCategories;
+        _itemsAddedToday = itemsAddedToday;
+        _itemsRemovedToday = itemsRemovedToday;
+        _totalValueToday = inboundValue - outboundValue;
         _isLoadingStats = false;
         _hasCachedStats = true;
         _cacheTime = DateTime.now();
       });
       
-      print('Admin Dashboard: Statistics loaded from database');
+      print('Admin Dashboard: Statistics loaded from API backend');
       print('Total Items: $_totalItems, Categories: $_totalCategories');
       print('Today - Added: $_itemsAddedToday, Removed: $_itemsRemovedToday, Value: $_totalValueToday');
       

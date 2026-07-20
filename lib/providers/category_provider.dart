@@ -88,37 +88,8 @@ class CategoryProvider extends ChangeNotifier {
       } else {
         print('No categories found in local storage');
         
-        // If no categories found anywhere, add fallback test categories
-        if (_categories.isEmpty) {
-          final testCategories = [
-            app_models.Category(
-              id: 'cat_beverages',
-              name: 'Beverages',
-              description: 'Soft drinks, juices, water, teas, and coffees',
-              icon: Icons.local_drink_outlined,
-            ),
-            app_models.Category(
-              id: 'cat_snacks',
-              name: 'Snacks',
-              description: 'Chips, biscuits, cookies, nuts, and quick bites',
-              icon: Icons.fastfood_outlined,
-            ),
-            app_models.Category(
-              id: 'cat_electronics',
-              name: 'Electronics',
-              description: 'Mobile phones, chargers, headphones, and accessories',
-              icon: Icons.devices_outlined,
-            ),
-            app_models.Category(
-              id: 'cat_clothing',
-              name: 'Clothing',
-              description: 'Shirts, pants, shoes, and apparel',
-              icon: Icons.checkroom_outlined,
-            ),
-          ];
-          _categories.addAll(testCategories);
-          print('Added mock test categories as fallback');
-        }
+        // No categories found anywhere, keep list empty
+        print('No categories found anywhere');
       }
       
       _isLoading = false;

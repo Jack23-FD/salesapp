@@ -52,6 +52,15 @@ class Item {
     }
   }
 
+  static double _parseDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is num) return value.toDouble();
+    if (value is String) {
+      return double.tryParse(value) ?? 0.0;
+    }
+    return 0.0;
+  }
+
   factory Item.fromMap(Map<String, dynamic> map, String id) {
     return Item(
       id: id,
@@ -59,11 +68,11 @@ class Item {
       categoryId: map['categoryId'] ?? '',
       quantity: map['quantity'] is int ? map['quantity'] : (map['quantity'] as num?)?.toInt() ?? 0,
       unit: map['unit'] ?? 'pcs',
-      price: (map['price'] ?? 0.0).toDouble(),
+      price: _parseDouble(map['price']),
       createdAt: _parseDateTime(map['createdAt']),
       dateAdded: _parseDateTime(map['dateAdded']),
       barcode: map['barcode'],
-      minLevel: map['minLevel'] != null ? (map['minLevel'] as num).toDouble() : null,
+      minLevel: map['minLevel'] != null ? _parseDouble(map['minLevel']) : null,
       type: map['type'] ?? 'inbound',
       categoryName: map['categoryName'],
       imageUrl: map['imageUrl'],

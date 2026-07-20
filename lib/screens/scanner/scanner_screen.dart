@@ -656,12 +656,12 @@ class _ScannerScreenState extends State<ScannerScreen> {
       padding: const EdgeInsets.all(24),
       margin: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.red.shade50,
+        color: Colors.green.shade50,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.red.shade200),
+        border: Border.all(color: Colors.green.shade200),
         boxShadow: [
           BoxShadow(
-            color: Colors.red.withOpacity(0.1),
+            color: Colors.green.withOpacity(0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -670,25 +670,25 @@ class _ScannerScreenState extends State<ScannerScreen> {
       child: Column(
         children: const [
           Icon(
-            Icons.error_outline,
-            color: Colors.red,
+            Icons.check_circle_outline,
+            color: Colors.green,
             size: 48,
           ),
           SizedBox(height: 16),
           Text(
-            'Product Not Found',
+            'Barcode Scanner Success',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.red,
+              color: Colors.green,
             ),
           ),
           SizedBox(height: 8),
           Text(
-            'This item has not been registered in the system yet',
+            'This barcode is unique and available to link to a new product.',
             style: TextStyle(
               fontSize: 14,
-              color: Colors.red,
+              color: Colors.green,
             ),
             textAlign: TextAlign.center,
           ),

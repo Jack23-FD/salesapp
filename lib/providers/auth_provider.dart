@@ -94,10 +94,10 @@ class AuthProvider extends ChangeNotifier {
         id: profileMap['id'] ?? '',
         email: profileMap['email'] ?? '',
         name: profileMap['name'] ?? '',
-        companyName: profileMap['company_name'] ?? '',
-        phoneNumber: profileMap['phone_number'] ?? '',
+        companyName: profileMap['companyName'] ?? profileMap['company_name'] ?? '',
+        phoneNumber: profileMap['phoneNumber'] ?? profileMap['phone_number'] ?? '',
         role: role,
-        createdAt: DateTime.tryParse(profileMap['created_at'] ?? '') ?? DateTime.now(),
+        createdAt: DateTime.tryParse(profileMap['createdAt'] ?? profileMap['created_at'] ?? '') ?? DateTime.now(),
         lastLogin: DateTime.now(),
         authProvider: 'email',
       );
@@ -157,10 +157,11 @@ class AuthProvider extends ChangeNotifier {
         role: role,
       );
 
-      // 2. Register Admin/Company details on PHP backend
-      if (role == UserRole.admin && companyName != null) {
-        print("AuthProvider: Registering admin company on PHP API");
-        await _apiService.registerAdmin(name, companyName, phoneNumber);
+      // 2. Register user details on PHP backend
+      if (companyName != null) {
+        final roleStr = role == UserRole.admin ? 'admin' : 'staff';
+        print("AuthProvider: Registering user on PHP API with role: $roleStr");
+        await _apiService.registerUser(name, companyName, roleStr, phoneNumber);
       }
 
       await _loadUserData();
@@ -247,9 +248,9 @@ class AuthProvider extends ChangeNotifier {
           id: json['id'] ?? '',
           email: json['email'] ?? '',
           name: json['name'] ?? '',
-          phoneNumber: json['phone_number'] ?? '',
+          phoneNumber: json['phoneNumber'] ?? json['phone_number'] ?? '',
           role: role,
-          createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
+          createdAt: DateTime.tryParse(json['createdAt'] ?? json['created_at'] ?? '') ?? DateTime.now(),
           lastLogin: DateTime.now(),
           authProvider: 'email',
         );

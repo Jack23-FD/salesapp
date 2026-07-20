@@ -89,33 +89,40 @@ class _SearchScreenState extends State<SearchScreen>
   void _onSearchChanged() {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
 
+    final hasSearchText = _searchController.text.isNotEmpty;
+    final hasFilters = _filterOptions.isNotEmpty;
+
     setState(() {
-      _isSearching = _searchController.text.isNotEmpty;
+      _isSearching = hasSearchText || hasFilters;
     });
 
-    if (_searchController.text.isNotEmpty) {
-      _debounce = Timer(const Duration(milliseconds: 500), () {
-        _performSearch();
-      });
-    } else {
-      setState(() {
-        _searchResults = [];
-      });
-    }
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      _performSearch();
+    });
   }
 
   void _performSearch() {
     final searchTerm = _searchController.text.trim().toLowerCase();
-    if (searchTerm.isEmpty) return;
+    final hasFilters = _filterOptions.isNotEmpty;
+
+    if (searchTerm.isEmpty && !hasFilters) {
+      setState(() {
+        _searchResults = [];
+        _isLoading = false;
+        _isSearching = false;
+      });
+      return;
+    }
 
     setState(() {
       _isLoading = true;
+      _isSearching = true;
     });
 
     // Simulate network delay for demonstration
-    Future.delayed(const Duration(milliseconds: 300), () {
+    Future.delayed(const Duration(milliseconds: 150), () {
       // Add to recent searches if not already there
-      if (!_recentSearches.contains(searchTerm)) {
+      if (searchTerm.isNotEmpty && !_recentSearches.contains(searchTerm)) {
         setState(() {
           _recentSearches.insert(0, searchTerm);
           // Keep only the last 8 searches
@@ -141,7 +148,14 @@ class _SearchScreenState extends State<SearchScreen>
           final categoryName = category?.name ?? 'Unknown Category';
 
           // Filter items that match the search term with optimized search
-          final matchingItems = _optimizedSearch(items, searchTerm);
+          final List<Item> matchingItems;
+          if (searchTerm.isEmpty) {
+            matchingItems = items; // If search query is empty, pass all items to be filtered by selected chips
+          } else if (categoryName.toLowerCase().contains(searchTerm)) {
+            matchingItems = items; // Include all items in the category if category matches
+          } else {
+            matchingItems = _optimizedSearch(items, searchTerm);
+          }
 
           // Add matching items to search results
           for (final item in matchingItems) {
@@ -300,6 +314,13 @@ class _SearchScreenState extends State<SearchScreen>
           .map((f) => f.replaceFirst('Availability: ', ''))
     ];
 
+    // Load actual categories from CategoryProvider
+    final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
+    final List<String> availableCategories = categoryProvider.categories.map((c) => c.name).toList();
+    if (availableCategories.isEmpty) {
+      availableCategories.addAll(['Food', 'Smarty']); // Fallback
+    }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -371,12 +392,7 @@ class _SearchScreenState extends State<SearchScreen>
                           Text(LocalizationService.translate('search.categories')),
                           Wrap(
                             spacing: 8,
-                            children: [
-                              'Food',
-                              'Electronics',
-                              'Clothing',
-                              'Home'
-                            ]
+                            children: availableCategories
                                 .map((category) => FilterChip(
                                       label: Text(category),
                                       selected:

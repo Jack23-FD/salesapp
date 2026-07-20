@@ -28,6 +28,7 @@ class RbacService {
       'view_items',
       'manage_items',
       'view_categories',
+      'manage_categories',
     },
   };
 

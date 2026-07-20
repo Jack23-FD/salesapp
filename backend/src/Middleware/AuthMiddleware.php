@@ -38,13 +38,18 @@ class AuthMiddleware {
 
         // If user doesn't exist in local database, but token is valid, they are allowed to proceed to signup/registration routes only
         if (!$user) {
-            // We return just the Firebase token details so they can register
-            return [
-                "uid" => $firebaseUser['uid'],
-                "email" => $firebaseUser['email'],
-                "name" => $firebaseUser['name'],
-                "is_registered" => false
-            ];
+            $requestUri = $_SERVER['REQUEST_URI'] ?? '';
+            if (strpos($requestUri, 'api/v1/auth/register') !== false) {
+                // We return just the Firebase token details so they can register
+                return [
+                    "uid" => $firebaseUser['uid'],
+                    "email" => $firebaseUser['email'],
+                    "name" => $firebaseUser['name'],
+                    "is_registered" => false
+                ];
+            }
+            
+            Response::unauthorized("Access Denied: Firebase user is not registered in the database. Please complete registration first.");
         }
 
         if ($user['status'] !== 'active') {

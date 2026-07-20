@@ -539,6 +539,24 @@ class _AddStockScreenState extends State<AddStockScreen> {
         
         // Show detailed error message with better handling
         debugPrint('Error saving item: $e');
+
+        if (e.toString().contains('barcode already exists')) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('A product with this barcode already exists.'),
+              backgroundColor: Colors.red[700],
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              margin: const EdgeInsets.all(10),
+            ),
+          );
+          setState(() {
+            _isLoading = false;
+          });
+          return;
+        }
         
         // Check if this is a duplicate entry error - in this case the item
         // is likely already in the database, so just navigate to category

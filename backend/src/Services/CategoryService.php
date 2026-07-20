@@ -80,10 +80,14 @@ class CategoryService {
         }
 
         try {
-            return $this->categoryRepo->softDelete($id, $userContext['company_id'], $userContext['uid']);
+            // 1. Delete all products belonging to this category
+            $this->categoryRepo->deleteProductsByCategory($id, $userContext['company_id']);
+            
+            // 2. Delete the category itself
+            return $this->categoryRepo->hardDelete($id, $userContext['company_id']);
         } catch (Exception $e) {
             error_log("Failed to delete category: " . $e->getMessage());
-            Response::error("Failed to delete category.", 500);
+            Response::error("Failed to delete category: " . $e->getMessage(), 500);
         }
     }
 }

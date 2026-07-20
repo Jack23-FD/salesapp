@@ -80,9 +80,6 @@ abstract class BaseRepository {
         }
     }
 
-    /**
-     * Soft Delete a record
-     */
     public function softDelete(string $id, string $companyId, string $userId): bool {
         $sql = "UPDATE {$this->tableName} 
                 SET deleted_at = NOW(), deleted_by = :deleted_by, status = 'deleted' 
@@ -96,6 +93,23 @@ abstract class BaseRepository {
             ]);
         } catch (PDOException $e) {
             error_log("Error in softDelete on {$this->tableName}: " . $e->getMessage());
+            throw new Exception("Failed to delete record.");
+        }
+    }
+
+    /**
+     * Hard Delete a record
+     */
+    public function hardDelete(string $id, string $companyId): bool {
+        $sql = "DELETE FROM {$this->tableName} WHERE id = :id AND company_id = :company_id";
+        try {
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute([
+                'id' => $id,
+                'company_id' => $companyId
+            ]);
+        } catch (PDOException $e) {
+            error_log("Error in hardDelete on {$this->tableName}: " . $e->getMessage());
             throw new Exception("Failed to delete record.");
         }
     }

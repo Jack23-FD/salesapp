@@ -22,6 +22,14 @@ class ProductService {
             Response::badRequest("Missing required product fields (name, categoryId, price).");
         }
 
+        // Validate barcode uniqueness
+        if (!empty($data['barcode'])) {
+            $existingProduct = $this->productRepo->findByBarcode($userContext['company_id'], $data['barcode']);
+            if ($existingProduct) {
+                Response::badRequest("A product with this barcode already exists.");
+            }
+        }
+
         $id = bin2hex(random_bytes(16));
 
         try {
@@ -41,6 +49,24 @@ class ProductService {
             ];
 
             $this->productRepo->create($insertData);
+
+            // Record initial stock as an inbound transaction for the dashboard
+            if ($insertData['quantity'] > 0) {
+                $db = \App\Config\Database::getInstance()->getConnection();
+                $transactionId = bin2hex(random_bytes(16));
+                $stmt = $db->prepare("
+                    INSERT INTO transactions (id, company_id, product_id, quantity, type, date, created_by)
+                    VALUES (:id, :company_id, :product_id, :quantity, 'inbound', NOW(), :created_by)
+                ");
+                $stmt->execute([
+                    'id' => $transactionId,
+                    'company_id' => $insertData['company_id'],
+                    'product_id' => $id,
+                    'quantity' => $insertData['quantity'],
+                    'created_by' => $insertData['created_by']
+                ]);
+            }
+
             return ['id' => $id, 'name' => $data['name']];
         } catch (Exception $e) {
             error_log("Failed to create product: " . $e->getMessage());
@@ -56,6 +82,14 @@ class ProductService {
         $existing = $this->productRepo->findById($id, $userContext['company_id']);
         if (!$existing) {
             Response::notFound("Product not found.");
+        }
+
+        // Validate barcode uniqueness
+        if (!empty($data['barcode'])) {
+            $existingProduct = $this->productRepo->findByBarcode($userContext['company_id'], $data['barcode']);
+            if ($existingProduct && $existingProduct['id'] !== $id) {
+                Response::badRequest("A product with this barcode already exists.");
+            }
         }
 
         try {
@@ -85,10 +119,10 @@ class ProductService {
         }
 
         try {
-            return $this->productRepo->softDelete($id, $userContext['company_id'], $userContext['uid']);
+            return $this->productRepo->hardDelete($id, $userContext['company_id']);
         } catch (Exception $e) {
             error_log("Failed to delete product: " . $e->getMessage());
-            Response::error("Failed to delete product.", 500);
+            Response::error("Failed to delete product: " . $e->getMessage(), 500);
         }
     }
 }

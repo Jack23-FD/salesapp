@@ -17,7 +17,7 @@ class ProductRepository extends BaseRepository {
     public function listByCompany(string $companyId, ?string $categoryId = null, ?string $search = null): array {
         $sql = "SELECT p.*, c.name as category_name 
                 FROM products p
-                JOIN categories c ON p.category_id = c.id
+                JOIN categories c ON p.category_id = c.id AND c.deleted_at IS NULL
                 WHERE p.company_id = :company_id AND p.deleted_at IS NULL";
         
         $params = ['company_id' => $companyId];

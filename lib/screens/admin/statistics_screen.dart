@@ -112,15 +112,16 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     });
     
     try {
+      final itemProvider = Provider.of<ItemProvider>(context, listen: false);
       // Load only essential statistics first
       final futures = await Future.wait([
-        _dbService.getTotalInboundQuantityByDate(_selectedDate),
-        _dbService.getTotalOutboundQuantityByDate(_selectedDate),
+        itemProvider.getTotalInboundQuantityFromDB(_selectedDate),
+        itemProvider.getTotalOutboundQuantityFromDB(_selectedDate),
       ]);
       
       setState(() {
-        _totalInbound = futures[0] as int;
-        _totalOutbound = futures[1] as int;
+        _totalInbound = int.tryParse(futures[0].toString()) ?? 0;
+        _totalOutbound = int.tryParse(futures[1].toString()) ?? 0;
         _isLoading = false;
         _hasCachedStats = true;
         _cacheTime = DateTime.now();
@@ -174,19 +175,20 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     }
     
     try {
+      final itemProvider = Provider.of<ItemProvider>(context, listen: false);
       final futures = await Future.wait([
-        _dbService.getInboundCategoriesCountByDate(_selectedDate),
-        _dbService.getOutboundCategoriesCountByDate(_selectedDate),
-        _dbService.getTotalInboundValueByDate(_selectedDate),
-        _dbService.getTotalOutboundValueByDate(_selectedDate),
+        itemProvider.getTotalInboundCategoriesFromDB(_selectedDate),
+        itemProvider.getTotalOutboundCategoriesFromDB(_selectedDate),
+        itemProvider.getTotalInboundValueFromDB(_selectedDate),
+        itemProvider.getTotalOutboundValueFromDB(_selectedDate),
       ]);
       
       if (mounted) {
         setState(() {
-          _inboundCategories = futures[0] as int;
-          _outboundCategories = futures[1] as int;
-          _totalInboundValue = futures[2] as double;
-          _totalOutboundValue = futures[3] as double;
+          _inboundCategories = int.tryParse(futures[0].toString()) ?? 0;
+          _outboundCategories = int.tryParse(futures[1].toString()) ?? 0;
+          _totalInboundValue = double.tryParse(futures[2].toString()) ?? 0.0;
+          _totalOutboundValue = double.tryParse(futures[3].toString()) ?? 0.0;
         });
       }
       

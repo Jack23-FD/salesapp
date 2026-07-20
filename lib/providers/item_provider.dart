@@ -141,7 +141,7 @@ class ItemProvider extends ChangeNotifier {
 
   Future<double> getTotalInboundValueFromDB(DateTime date) async {
     final stats = await _getOrFetchStats(date);
-    return (stats['inbound']['value'] as num).toDouble();
+    return double.tryParse(stats['inbound']['value'].toString()) ?? 0.0;
   }
   
   Future<int> getTotalOutboundQuantityFromDB(DateTime date) async {
@@ -156,7 +156,7 @@ class ItemProvider extends ChangeNotifier {
   
   Future<double> getTotalOutboundValueFromDB(DateTime date) async {
     final stats = await _getOrFetchStats(date);
-    return (stats['outbound']['value'] as num).toDouble();
+    return double.tryParse(stats['outbound']['value'].toString()) ?? 0.0;
   }
 
   List<OutboundTransaction> getOutboundTransactionsByDate(DateTime date) {
@@ -188,6 +188,9 @@ class ItemProvider extends ChangeNotifier {
       notifyListeners();
 
       await _apiService.createProduct(item);
+      
+      // Clear cached statistics so the dashboard refreshes
+      _cachedStatsByDate.clear();
       
       // Reload product listing from API
       await _loadItemsFromDatabase();
@@ -222,6 +225,10 @@ class ItemProvider extends ChangeNotifier {
       notifyListeners();
 
       await _apiService.deleteProduct(id);
+      
+      // Clear cached statistics so the dashboard refreshes
+      _cachedStatsByDate.clear();
+      
       await _loadItemsFromDatabase();
     } catch (e) {
       print('Error deleting product from API: $e');

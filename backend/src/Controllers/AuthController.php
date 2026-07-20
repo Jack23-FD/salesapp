@@ -23,8 +23,8 @@ class AuthController {
         $data['uid'] = $userContext['uid'];
         $data['email'] = $userContext['email'];
 
-        $result = $this->authService->registerAdmin($data);
-        Response::success("Company and Admin registered successfully.", $result, 201);
+        $result = $this->authService->registerUser($data);
+        Response::success("User registered successfully.", $result, 201);
     }
 
     /**

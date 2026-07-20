@@ -3,6 +3,23 @@
 namespace App\Utils;
 
 class Response {
+    private static function convertToCamelCase(mixed $data): mixed {
+        if (!is_array($data)) {
+            return $data;
+        }
+
+        $result = [];
+        foreach ($data as $key => $value) {
+            $newKey = $key;
+            if (is_string($key)) {
+                // Convert snake_case to camelCase
+                $newKey = lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
+            }
+            $result[$newKey] = self::convertToCamelCase($value);
+        }
+        return $result;
+    }
+
     public static function json(string $status, string $message, mixed $data = null, int $statusCode = 200): void {
         http_response_code($statusCode);
         
@@ -12,7 +29,7 @@ class Response {
         ];
 
         if ($data !== null) {
-            $response["data"] = $data;
+            $response["data"] = self::convertToCamelCase($data);
         }
 
         echo json_encode($response, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
@@ -32,7 +49,7 @@ class Response {
         ];
 
         if ($errors !== null) {
-            $response["errors"] = $errors;
+            $response["errors"] = self::convertToCamelCase($errors);
         }
 
         echo json_encode($response, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);

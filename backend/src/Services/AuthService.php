@@ -20,45 +20,77 @@ class AuthService {
     }
 
     /**
-     * Register a new company and its primary admin user
+     * Register a new user (admin or staff)
      */
-    public function registerAdmin(array $data): array {
+    public function registerUser(array $data): array {
         // Validate input data
         if (empty($data['uid']) || empty($data['name']) || empty($data['email']) || empty($data['companyName'])) {
             Response::badRequest("Missing required registration fields.");
         }
 
-        $companyId = bin2hex(random_bytes(16)); // Generate secure company UUID
+        $role = $data['role'] ?? 'admin';
+        if ($role !== 'admin' && $role !== 'staff') {
+            Response::badRequest("Invalid registration role.");
+        }
 
         try {
-            return $this->txManager->transaction(function() use ($companyId, $data) {
-                // 1. Create company record
-                $this->companyRepo->create([
-                    'id' => $companyId,
-                    'name' => $data['companyName'],
-                    'status' => 'active'
-                ]);
-
-                // 2. Create user record with admin role
+            if ($role === 'staff') {
+                // Look up company by name
+                $company = $this->companyRepo->findByName($data['companyName']);
+                if (!$company) {
+                    Response::badRequest("Company '{$data['companyName']}' does not exist. Please contact your administrator.");
+                }
+                
+                $companyId = $company['id'];
+                
+                // Create user record with staff role
                 $this->userRepo->create([
                     'id' => $data['uid'],
                     'company_id' => $companyId,
                     'name' => $data['name'],
                     'email' => $data['email'],
                     'phone_number' => $data['phoneNumber'] ?? null,
-                    'role' => 'admin',
+                    'role' => 'staff',
                     'status' => 'active'
                 ]);
 
                 return [
                     'uid' => $data['uid'],
                     'company_id' => $companyId,
-                    'role' => 'admin'
+                    'role' => 'staff'
                 ];
-            });
+            } else {
+                $companyId = bin2hex(random_bytes(16)); // Generate secure company UUID
+                
+                return $this->txManager->transaction(function() use ($companyId, $data) {
+                    // 1. Create company record
+                    $this->companyRepo->create([
+                        'id' => $companyId,
+                        'name' => $data['companyName'],
+                        'status' => 'active'
+                    ]);
+
+                    // 2. Create user record with admin role
+                    $this->userRepo->create([
+                        'id' => $data['uid'],
+                        'company_id' => $companyId,
+                        'name' => $data['name'],
+                        'email' => $data['email'],
+                        'phone_number' => $data['phoneNumber'] ?? null,
+                        'role' => 'admin',
+                        'status' => 'active'
+                    ]);
+
+                    return [
+                        'uid' => $data['uid'],
+                        'company_id' => $companyId,
+                        'role' => 'admin'
+                    ];
+                });
+            }
         } catch (Exception $e) {
-            error_log("Failed to register admin: " . $e->getMessage());
-            Response::error("Registration failed. Please try again.", 500);
+            error_log("Failed to register user: " . $e->getMessage());
+            Response::error($e->getMessage(), 500);
         }
     }
 

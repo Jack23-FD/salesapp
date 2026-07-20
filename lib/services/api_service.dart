@@ -27,15 +27,31 @@ class ApiService {
 
   // Handle standard response checks and throw clear error objects
   dynamic _processResponse(http.Response response) {
+    final bodyStr = response.body.trim();
+    
     if (response.statusCode >= 200 && response.statusCode < 300) {
-      final body = jsonDecode(response.body);
-      if (body['status'] == 'success') {
-        return body['data'];
+      if (bodyStr.isEmpty) {
+        throw Exception('Server returned empty response (Status: ${response.statusCode})');
       }
-      throw Exception(body['message'] ?? 'Unknown error occurred');
+      try {
+        final body = jsonDecode(bodyStr);
+        if (body['status'] == 'success') {
+          return body['data'];
+        }
+        throw Exception(body['message'] ?? 'Unknown error occurred');
+      } catch (e) {
+        throw Exception('Failed to parse JSON response: $e. Raw body: "$bodyStr"');
+      }
     } else {
-      final errorBody = jsonDecode(response.body);
-      throw Exception(errorBody['message'] ?? 'HTTP Error ${response.statusCode}');
+      if (bodyStr.isEmpty) {
+        throw Exception('HTTP Error ${response.statusCode}: Empty response body');
+      }
+      try {
+        final errorBody = jsonDecode(bodyStr);
+        throw Exception(errorBody['message'] ?? 'HTTP Error ${response.statusCode}');
+      } catch (e) {
+        throw Exception('HTTP Error ${response.statusCode}. Raw body: "$bodyStr"');
+      }
     }
   }
 
@@ -60,7 +76,7 @@ class ApiService {
 
   // --- AUTHENTICATION & STAFF API ---
 
-  Future<Map<String, dynamic>> registerAdmin(String name, String companyName, String? phoneNumber) async {
+  Future<Map<String, dynamic>> registerUser(String name, String companyName, String role, String? phoneNumber) async {
     final headers = await _getHeaders();
     final response = await _requestWithRetry(() => _client.post(
       Uri.parse('$baseUrl/auth/register'),
@@ -68,6 +84,7 @@ class ApiService {
       body: jsonEncode({
         'name': name,
         'companyName': companyName,
+        'role': role,
         'phoneNumber': phoneNumber ?? ''
       }),
     ));

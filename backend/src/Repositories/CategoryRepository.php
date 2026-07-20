@@ -28,4 +28,21 @@ class CategoryRepository extends BaseRepository {
             throw new Exception("Database query failed.");
         }
     }
+
+    /**
+     * Hard-delete all products belonging to a category
+     */
+    public function deleteProductsByCategory(string $categoryId, string $companyId): void {
+        $sql = "DELETE FROM products WHERE category_id = :category_id AND company_id = :company_id";
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                'category_id' => $categoryId,
+                'company_id' => $companyId
+            ]);
+        } catch (PDOException $e) {
+            error_log("Error in deleteProductsByCategory on products: " . $e->getMessage());
+            throw new Exception("Failed to delete products associated with this category.");
+        }
+    }
 }
