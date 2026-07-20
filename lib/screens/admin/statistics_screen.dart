@@ -86,27 +86,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   
   // Load only the essential statistics first
   Future<void> _loadBasicStatistics() async {
-    final cacheKey = 'basic_stats_${_selectedDate.year}_${_selectedDate.month}_${_selectedDate.day}';
-    final cachedData = await StorageUtils.getCachedStringValue(cacheKey);
-    
-    if (cachedData != null && _isCacheValid) {
-      try {
-        // Try to parse cached data
-        final parts = cachedData.split(',');
-        if (parts.length >= 2) {
-          setState(() {
-            _totalInbound = int.parse(parts[0]);
-            _totalOutbound = int.parse(parts[1]);
-            _isLoading = false;
-          });
-          print('Statistics Screen: Using cached basic statistics');
-          return;
-        }
-      } catch (e) {
-        print('Error parsing cached data: $e');
-      }
-    }
-  
     setState(() {
       _isLoading = true;
     });
@@ -127,12 +106,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         _cacheTime = DateTime.now();
       });
       
-      // Cache the basic data
-      await StorageUtils.cacheStringValue(
-        cacheKey, 
-        '$_totalInbound,$_totalOutbound'
-      );
-      
       print('Basic statistics loaded: Inbound=$_totalInbound, Outbound=$_totalOutbound');
     } catch (e) {
       print('Error loading basic statistics: $e');
@@ -152,28 +125,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   
   // Load the more detailed statistics after basic ones
   Future<void> _loadDetailedStatistics() async {
-    final cacheKey = 'detailed_stats_${_selectedDate.year}_${_selectedDate.month}_${_selectedDate.day}';
-    final cachedData = await StorageUtils.getCachedStringValue(cacheKey);
-    
-    if (cachedData != null && _isCacheValid) {
-      try {
-        // Try to parse cached data
-        final parts = cachedData.split(',');
-        if (parts.length >= 4) {
-          setState(() {
-            _inboundCategories = int.parse(parts[0]);
-            _outboundCategories = int.parse(parts[1]);
-            _totalInboundValue = double.parse(parts[2]);
-            _totalOutboundValue = double.parse(parts[3]);
-          });
-          print('Statistics Screen: Using cached detailed statistics');
-          return;
-        }
-      } catch (e) {
-        print('Error parsing cached detailed data: $e');
-      }
-    }
-    
     try {
       final itemProvider = Provider.of<ItemProvider>(context, listen: false);
       final futures = await Future.wait([
@@ -192,16 +143,11 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         });
       }
       
-      // Cache the detailed data
-      await StorageUtils.cacheStringValue(
-        cacheKey, 
-        '$_inboundCategories,$_outboundCategories,$_totalInboundValue,$_totalOutboundValue'
-      );
-      
       print('Detailed statistics loaded');
     } catch (e) {
       print('Error loading detailed statistics: $e');
     }
+  }
   }
   
   // Load chart data separately and asynchronously
