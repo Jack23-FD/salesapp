@@ -6,6 +6,8 @@ import '../providers/item_provider.dart';
 import 'add_stock_screen.dart';
 import 'use_stock_screen.dart';
 import '../services/localization_service.dart';
+import '../theme/app_theme.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ItemsScreen extends StatefulWidget {
   final Category category;
@@ -204,7 +206,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
               ListTile(
                 title: const Text('All Items'),
                 trailing: _activeFilter == 'All Items'
-                    ? const Icon(Icons.check_circle, color: Color(0xFF333366))
+                    ? const Icon(Icons.check_circle, color: const Color(0xFFFF8A00))
                     : null,
                 onTap: () {
                   setState(() {
@@ -218,7 +220,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
                 title: const Text('Active Items'),
                 trailing: _activeFilter == 'Active Items' ||
                         _activeFilter == 'Active'
-                    ? const Icon(Icons.check_circle, color: Color(0xFF333366))
+                    ? const Icon(Icons.check_circle, color: const Color(0xFFFF8A00))
                     : null,
                 onTap: () {
                   setState(() {
@@ -231,7 +233,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
               ListTile(
                 title: const Text('Low Stock Items'),
                 trailing: _activeFilter == 'Low Stock Items'
-                    ? const Icon(Icons.check_circle, color: Color(0xFF333366))
+                    ? const Icon(Icons.check_circle, color: const Color(0xFFFF8A00))
                     : null,
                 onTap: () {
                   setState(() {
@@ -355,17 +357,17 @@ class _ItemsScreenState extends State<ItemsScreen> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF333366).withOpacity(0.1),
+                        color: AppTheme.primaryColor.withOpacity(0.1),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.info_outline,
-                          color: Color(0xFF333366), size: 18),
+                          color: AppTheme.primaryColor, size: 18),
                     ),
                     const SizedBox(width: 8),
                     const Expanded(
                       child: Text(
                         'Tap on element to change from ascending to descending, and vice versa.',
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                        style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                       ),
                     ),
                   ],
@@ -378,17 +380,18 @@ class _ItemsScreenState extends State<ItemsScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       'Sort Selected',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
+                      style: GoogleFonts.urbanist(
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.textPrimary,
                       ),
                     ),
                     Text(
                       'Name (Ascending)',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey.shade600,
+                      style: GoogleFonts.urbanist(
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.textSecondary,
                       ),
                     ),
                   ],
@@ -405,11 +408,11 @@ class _ItemsScreenState extends State<ItemsScreen> {
                     Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF333366),
+                    backgroundColor: AppTheme.primaryColor,
                     foregroundColor: Colors.white,
                     minimumSize: const Size(double.infinity, 48),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(14),
                     ),
                   ),
                   child: const Text('Sort'),
@@ -426,134 +429,98 @@ class _ItemsScreenState extends State<ItemsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.secondaryBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppTheme.backgroundColor,
         elevation: 0,
+        scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: AppTheme.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Items',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
+        title: Text(
+          widget.category.name,
+          style: GoogleFonts.urbanist(
+            color: AppTheme.textPrimary,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
           ),
         ),
-        actions: [
-          IconButton(
-            icon:
-                const Icon(Icons.qr_code_scanner_outlined, color: Colors.black),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined, color: Colors.black),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: Column(
         children: [
           // Filter Section
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.05),
-                  spreadRadius: 1,
-                  blurRadius: 1,
-                ),
-              ],
+            decoration: const BoxDecoration(
+              color: AppTheme.backgroundColor,
+              border: Border(
+                bottom: BorderSide(color: AppTheme.borderColor, width: 1),
+              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Category Path
-                Text(
-                  'Category / ${widget.category.name}',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                // Filters
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.25,
+                    InkWell(
+                      onTap: _showStatusFilterModal,
+                      borderRadius: BorderRadius.circular(10),
                       child: Container(
-                        decoration: const BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                              color: Color(0xFF333366),
-                              width: 2.0,
-                            ),
-                          ),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryColor,
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        child: InkWell(
-                          onTap: _showStatusFilterModal,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  _activeFilter,
-                                  style: const TextStyle(
-                                    color: Color(0xFF333366),
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                const Icon(
-                                  Icons.keyboard_arrow_down,
-                                  color: Color(0xFF333366),
-                                ),
-                              ],
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              _activeFilter,
+                              style: GoogleFonts.urbanist(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
+                            const SizedBox(width: 4),
+                            const Icon(
+                              Icons.keyboard_arrow_down,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.25,
+                    InkWell(
+                      onTap: _showSortByModal,
+                      borderRadius: BorderRadius.circular(10),
                       child: Container(
-                        decoration: const BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                              color: Color(0xFF333366),
-                              width: 2.0,
-                            ),
-                          ),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryColor,
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        child: InkWell(
-                          onTap: _showSortByModal,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  _sortBy,
-                                  style: const TextStyle(
-                                    color: Color(0xFF333366),
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                const Icon(
-                                  Icons.keyboard_arrow_down,
-                                  color: Color(0xFF333366),
-                                ),
-                              ],
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              _sortBy,
+                              style: GoogleFonts.urbanist(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
+                            const SizedBox(width: 4),
+                            const Icon(
+                              Icons.keyboard_arrow_down,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -571,7 +538,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
                 if (itemProvider.isLoading) {
                   return const Center(
                     child: CircularProgressIndicator(
-                      color: Color(0xFF333366),
+                      color: AppTheme.primaryColor,
                     ),
                   );
                 }
@@ -595,7 +562,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
                           'No Item Found',
                           style: TextStyle(
                             fontSize: 16,
-                            color: Colors.grey,
+                            color: AppTheme.textSecondary,
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -610,7 +577,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
                             ).then((_) => _loadItems());
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF333366),
+                            backgroundColor: AppTheme.primaryColor,
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 24, vertical: 12),
@@ -629,11 +596,13 @@ class _ItemsScreenState extends State<ItemsScreen> {
                     itemCount: items.length,
                     itemBuilder: (context, index) {
                       final item = items[index];
+                      final bool isLowStock = item.quantity <= (item.minLevel ?? 5);
                       return Card(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        elevation: 1,
+                        margin: const EdgeInsets.only(bottom: 12),
+                        elevation: 0,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(16),
+                          side: const BorderSide(color: AppTheme.borderColor),
                         ),
                         child: Padding(
                           padding: const EdgeInsets.all(12),
@@ -644,12 +613,12 @@ class _ItemsScreenState extends State<ItemsScreen> {
                                 width: 60,
                                 height: 60,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF333366),
-                                  borderRadius: BorderRadius.circular(8),
+                                  color: AppTheme.lightOrange,
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: item.imageUrl != null
                                     ? ClipRRect(
-                                        borderRadius: BorderRadius.circular(8),
+                                        borderRadius: BorderRadius.circular(12),
                                         child: Image.network(
                                           item.imageUrl!,
                                           fit: BoxFit.cover,
@@ -657,8 +626,8 @@ class _ItemsScreenState extends State<ItemsScreen> {
                                       )
                                     : const Icon(
                                         Icons.inventory_2_outlined,
-                                        color: Colors.white,
-                                        size: 30,
+                                        color: AppTheme.primaryColor,
+                                        size: 26,
                                       ),
                               ),
                               const SizedBox(width: 12),
@@ -669,9 +638,10 @@ class _ItemsScreenState extends State<ItemsScreen> {
                                   children: [
                                     Text(
                                       item.name,
-                                      style: const TextStyle(
+                                      style: GoogleFonts.urbanist(
                                         fontSize: 16,
-                                        fontWeight: FontWeight.w500,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppTheme.textPrimary,
                                       ),
                                     ),
                                     const SizedBox(height: 4),
@@ -679,39 +649,64 @@ class _ItemsScreenState extends State<ItemsScreen> {
                                     if (item.categoryName != null && item.categoryName != widget.category.name)
                                       Text(
                                         'Category: ${item.categoryName}',
-                                        style: TextStyle(
+                                        style: GoogleFonts.urbanist(
                                           fontSize: 12,
-                                          color: Colors.grey[600],
+                                          fontWeight: FontWeight.w500,
+                                          color: AppTheme.textSecondary,
                                         ),
                                       ),
                                     const SizedBox(height: 4),
                                     Row(
                                       children: [
                                         Expanded(
-                                          child: Text(
-                                            'Quantity: ${item.quantity} ${item.unit}',
-                                            style: const TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.grey,
-                                            ),
+                                          child: Row(
+                                            children: [
+                                              Text(
+                                                'Qty: ${item.quantity} ${item.unit}',
+                                                style: GoogleFonts.urbanist(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: isLowStock ? AppTheme.warning : AppTheme.textSecondary,
+                                                ),
+                                              ),
+                                              if (isLowStock) ...[
+                                                const SizedBox(width: 6),
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                  decoration: BoxDecoration(
+                                                    color: AppTheme.warningBackground,
+                                                    borderRadius: BorderRadius.circular(6),
+                                                  ),
+                                                  child: Text(
+                                                    'LOW',
+                                                    style: GoogleFonts.urbanist(
+                                                      fontSize: 10,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: AppTheme.warning,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
                                           ),
                                         ),
                                         Text(
-                                          'Price: €${item.price.toStringAsFixed(2)}',
-                                          style: const TextStyle(
+                                          '€${item.price.toStringAsFixed(2)}',
+                                          style: GoogleFonts.urbanist(
                                             fontSize: 14,
-                                            color: Colors.grey,
+                                            fontWeight: FontWeight.bold,
+                                            color: AppTheme.primaryColor,
                                           ),
                                         ),
                                       ],
                                     ),
                                     const SizedBox(height: 4),
-                                    if (item.barcode != null)
+                                    if (item.barcode != null && item.barcode!.isNotEmpty)
                                       Text(
                                         'Barcode: ${item.barcode}',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey[600],
+                                        style: GoogleFonts.urbanist(
+                                          fontSize: 11,
+                                          color: AppTheme.textSecondary,
                                         ),
                                       ),
                                   ],
@@ -719,7 +714,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
                               ),
                               // More Options
                               IconButton(
-                                icon: const Icon(Icons.more_vert),
+                                icon: const Icon(Icons.more_vert, color: AppTheme.textSecondary),
                                 onPressed: () => _showItemOptions(context, item),
                               ),
                             ],
@@ -748,10 +743,11 @@ class _ItemsScreenState extends State<ItemsScreen> {
                 ),
               ).then((_) => _loadItems()); // Reload items after returning
             },
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.warning,
             heroTag: 'outbound_fab',
             mini: true,
-            child: const Icon(Icons.remove),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            child: const Icon(Icons.remove, color: Colors.white),
           ),
           const SizedBox(height: 10),
           // Add stock button
@@ -765,9 +761,10 @@ class _ItemsScreenState extends State<ItemsScreen> {
                 ),
               ).then((_) => _loadItems()); // Reload items after returning
             },
-            backgroundColor: const Color(0xFF333366),
+            backgroundColor: AppTheme.primaryColor,
             heroTag: 'add_fab',
-            child: const Icon(Icons.add),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            child: const Icon(Icons.add, color: Colors.white),
           ),
         ],
       ),

@@ -3,7 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 /// Shared constants and styles for auth screens
 class AuthStyles {
-  static const Color primaryColor = Color(0xFF333366);
+  static const Color primaryColor = const Color(0xFFFF8A00);
   static const Color textGreyColor = Colors.grey;
 
   static const TextStyle titleStyle = TextStyle(

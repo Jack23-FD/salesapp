@@ -49,12 +49,12 @@ class MenuScreen extends StatelessWidget {
                     'menu.myAccount',
                     style: theme.textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFF333366),
+                      color: Colors.black,
                     ),
                   ),
                   const Spacer(),
                   const NotificationIcon(
-                    iconColor: Color(0xFF333366),
+                    iconColor: const Color(0xFFFF8A00),
                     useContainerBackground: false,
                   ),
                 ],
@@ -85,7 +85,7 @@ class MenuScreen extends StatelessWidget {
                       height: 70,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Color(0xFF333366), Color(0xFF5656AA)],
+                          colors: [Color(0xFFFF8A00), Color(0xFFFFC04C)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -134,12 +134,12 @@ class MenuScreen extends StatelessWidget {
                             label: TranslatableText(
                               'menu.editProfile',
                               style: const TextStyle(
-                                color: Color(0xFF333366),
+                                color: const Color(0xFFFF8A00),
                               ),
                             ),
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFF333366),
-                              side: const BorderSide(color: Color(0xFF333366)),
+                              foregroundColor: const Color(0xFFFF8A00),
+                              side: const BorderSide(color: const Color(0xFFFF8A00)),
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 12, vertical: 4),
                               shape: RoundedRectangleBorder(
@@ -253,7 +253,7 @@ class MenuScreen extends StatelessWidget {
                         icon: Icons.help_outline,
                         title: 'menu.helpSupport',
                         onTap: () {
-                          // TODO: Navigate to help and support screen
+                          Navigator.pushNamed(context, '/walkthrough');
                         },
                       ),
                     ],
@@ -342,13 +342,13 @@ class MenuScreen extends StatelessWidget {
           children: [
             Container(
               decoration: BoxDecoration(
-                color: const Color(0xFF333366).withOpacity(0.1),
+                color: const Color(0xFFFFF3E0),
                 borderRadius: BorderRadius.circular(8),
               ),
               padding: const EdgeInsets.all(8),
               child: Icon(
                 icon,
-                color: const Color(0xFF333366),
+                color: const Color(0xFFFF8A00),
                 size: 20,
               ),
             ),
@@ -388,7 +388,7 @@ class MenuScreen extends StatelessWidget {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: TranslatableText('auth.signOut'),
         content: TranslatableText('auth.signOutConfirmation'),
         shape: RoundedRectangleBorder(
@@ -397,14 +397,14 @@ class MenuScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
             },
             child: TranslatableText('common.cancel'),
           ),
           TextButton(
             onPressed: () async {
               // Close the confirmation dialog first
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
 
               try {
                 // Sign out with timeout

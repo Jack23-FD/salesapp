@@ -211,13 +211,13 @@ class _ScannerScreenState extends State<ScannerScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF333366)),
+          icon: const Icon(Icons.arrow_back, color: const Color(0xFFFF8A00)),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Scan Barcode',
           style: TextStyle(
-            color: Color(0xFF333366),
+            color: const Color(0xFFFF8A00),
             fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
@@ -232,98 +232,133 @@ class _ScannerScreenState extends State<ScannerScreen> {
     return SingleChildScrollView(
       child: Column(
         children: [
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Enter Barcode Manually',
                   style: TextStyle(
-                    color: Color(0xFF333366),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
+                    color: Colors.grey[800],
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 Row(
                   children: [
                     Expanded(
-                      child: TextField(
-                        controller: _manualBarcodeController,
-                        decoration: InputDecoration(
-                          hintText: 'Enter barcode number',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFF333366)),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.02),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
-                        keyboardType: TextInputType.number,
-                        onChanged: (value) {
-                          // Process barcode after it reaches a reasonable length (most barcodes are at least 8 chars)
-                          if (value.length >= 8) {
-                            _onBarcodeDetected(value);
-                          }
-                        },
-                        onSubmitted: (value) {
-                          // Also process on submission for shorter barcodes
-                          if (value.isNotEmpty) {
-                            _onBarcodeDetected(value);
-                          }
-                        },
+                        child: TextField(
+                          controller: _manualBarcodeController,
+                          decoration: InputDecoration(
+                            hintText: 'Enter barcode number',
+                            hintStyle: const TextStyle(color: Colors.grey),
+                            prefixIcon: const Icon(Icons.qr_code, color: Color(0xFFFF8A00)),
+                            filled: true,
+                            fillColor: Colors.grey[100],
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide.none,
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: const BorderSide(color: Color(0xFFFF8A00), width: 1.5),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          ),
+                          keyboardType: TextInputType.number,
+                          onChanged: (value) {
+                            if (value.length >= 8) {
+                              _onBarcodeDetected(value);
+                            }
+                          },
+                          onSubmitted: (value) {
+                            if (value.isNotEmpty) {
+                              _onBarcodeDetected(value);
+                            }
+                          },
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      onPressed: () {
-                        if (_manualBarcodeController.text.isNotEmpty) {
-                          _onBarcodeDetected(_manualBarcodeController.text);
-                        }
-                      },
-                      icon: const Icon(Icons.search, color: Color(0xFF333366)),
-                      tooltip: 'Process barcode',
+                    const SizedBox(width: 10),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF8A00),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFFF8A00).withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: IconButton(
+                        onPressed: () {
+                          if (_manualBarcodeController.text.isNotEmpty) {
+                            _onBarcodeDetected(_manualBarcodeController.text);
+                          }
+                        },
+                        icon: const Icon(Icons.search, color: Colors.white),
+                        tooltip: 'Process barcode',
+                      ),
                     ),
                   ],
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 16),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20),
-            height: 1,
-            color: Colors.grey.shade300,
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'OR Scan with Camera',
-            style: TextStyle(
-              color: Color(0xFF333366),
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
+          const SizedBox(height: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Text(
+                    'OR Scan with Camera',
+                    style: TextStyle(
+                      color: Colors.grey[500],
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
+              ],
             ),
-            textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           Container(
-            height: MediaQuery.of(context).size.height * 0.35,
+            height: MediaQuery.of(context).size.height * 0.38,
             margin: const EdgeInsets.symmetric(horizontal: 20),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFF333366), width: 2),
-              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.grey[200]!, width: 1.5),
+              color: Colors.black,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
                 ),
               ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(18.5),
               child: Stack(
                 children: [
                   mobile_scanner.MobileScanner(
@@ -343,28 +378,28 @@ class _ScannerScreenState extends State<ScannerScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 20),
-          const Text(
+          const SizedBox(height: 18),
+          Text(
             'Place the barcode inside the frame',
             style: TextStyle(
-              color: Color(0xFF333366),
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
+              color: Colors.grey[600],
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
             ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 20),
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.grey.shade200),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.grey[100]!),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.05),
-                  blurRadius: 8,
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 16,
                   offset: const Offset(0, 4),
                 ),
               ],
@@ -383,7 +418,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                 ),
                 Container(
                   width: 1,
-                  height: 40,
+                  height: 36,
                   color: Colors.grey.shade200,
                 ),
                 ScannerControlButton(
@@ -399,11 +434,11 @@ class _ScannerScreenState extends State<ScannerScreen> {
                 ),
                 Container(
                   width: 1,
-                  height: 40,
+                  height: 36,
                   color: Colors.grey.shade200,
                 ),
                 ScannerControlButton(
-                  icon: Icons.image,
+                  icon: Icons.image_outlined,
                   label: 'Gallery',
                   onTap: _handleGalleryScanning,
                 ),
@@ -432,7 +467,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF333366),
+                  color: const Color(0xFFFF8A00),
                 ),
               ),
               const SizedBox(height: 32),
@@ -466,7 +501,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                         _scannedBarcode!,
                         style: const TextStyle(
                           fontSize: 16,
-                          color: Color(0xFF333366),
+                          color: const Color(0xFFFF8A00),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -479,7 +514,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                 const Center(
                   child: CircularProgressIndicator(
                     valueColor:
-                        AlwaysStoppedAnimation<Color>(Color(0xFF333366)),
+                        AlwaysStoppedAnimation<Color>(const Color(0xFFFF8A00)),
                   ),
                 )
               else if (_existingItem != null)
@@ -549,7 +584,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF333366),
+                    color: const Color(0xFFFF8A00),
                   ),
                   textAlign: TextAlign.center,
                   overflow: TextOverflow.ellipsis,
@@ -573,7 +608,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF333366),
+                  color: const Color(0xFFFF8A00),
                 ),
               ),
             ],
@@ -594,7 +629,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF333366),
+                  color: const Color(0xFFFF8A00),
                 ),
               ),
             ],
@@ -629,7 +664,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                   child: ElevatedButton(
                     onPressed: _addQuantity,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF333366),
+                      backgroundColor: const Color(0xFFFF8A00),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),

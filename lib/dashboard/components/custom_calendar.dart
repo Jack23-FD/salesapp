@@ -98,7 +98,7 @@ class _CustomCalendarState extends State<CustomCalendar> {
                       style: GoogleFonts.urbanist(
                         fontWeight: FontWeight.w700,
                         fontSize: 18.0,
-                        color: const Color(0xFF333366),
+                        color: const Color(0xFFFF8A00),
                       ),
                     ),
                   ],
@@ -170,14 +170,14 @@ class _CustomCalendarState extends State<CustomCalendar> {
                     style: GoogleFonts.urbanist(
                       fontWeight: FontWeight.w600,
                       fontSize: 16.0,
-                      color: const Color(0xFF333366),
+                      color: const Color(0xFFFF8A00),
                     ),
                   ),
                 ),
                 ElevatedButton(
                   onPressed: widget.onClose,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF333366),
+                    backgroundColor: const Color(0xFFFF8A00),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8.0),
@@ -208,12 +208,12 @@ class _CustomCalendarState extends State<CustomCalendar> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF333366).withOpacity(0.1),
+        color: const Color(0xFFFFF3E0),
         borderRadius: BorderRadius.circular(8.0),
       ),
       child: IconButton(
         onPressed: onPressed,
-        icon: Icon(icon, color: const Color(0xFF333366), size: 20),
+        icon: Icon(icon, color: const Color(0xFFFF8A00), size: 20),
         padding: const EdgeInsets.all(8),
         constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
       ),
@@ -235,13 +235,13 @@ class _CustomCalendarState extends State<CustomCalendar> {
       child: Container(
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF333366)
+              ? const Color(0xFFFF8A00)
               : isToday
-                  ? const Color(0xFF333366).withOpacity(0.1)
+                  ? const Color(0xFFFFF3E0)
                   : Colors.transparent,
           borderRadius: BorderRadius.circular(8.0),
           border: isToday && !isSelected
-              ? Border.all(color: const Color(0xFF333366), width: 1)
+              ? Border.all(color: const Color(0xFFFF8A00), width: 1)
               : null,
         ),
         alignment: Alignment.center,
@@ -254,8 +254,10 @@ class _CustomCalendarState extends State<CustomCalendar> {
             color: isSelected
                 ? Colors.white
                 : !isCurrentMonth
-                    ? Colors.grey
-                    : const Color(0xFF333366),
+                    ? Colors.grey[400]
+                    : isToday
+                        ? const Color(0xFFFF8A00)
+                        : Colors.black87,
           ),
         ),
       ),
@@ -271,7 +273,7 @@ class _CustomCalendarState extends State<CustomCalendar> {
         alignment: Alignment.center,
         margin: const EdgeInsets.only(bottom: 4.0),
         decoration: BoxDecoration(
-          color: const Color(0xFF333366).withOpacity(0.05),
+          color: const Color(0xFFFFF3E0),
           borderRadius: BorderRadius.circular(8.0),
         ),
         child: Text(
@@ -279,7 +281,7 @@ class _CustomCalendarState extends State<CustomCalendar> {
           style: GoogleFonts.urbanist(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: const Color(0xFF333366),
+            color: const Color(0xFFFF8A00),
           ),
         ),
       );

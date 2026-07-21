@@ -174,6 +174,16 @@
     "deletingItem": "Deleting item..."
   },
   "itemDetails": {
+    "title": "Item Details",
+    "inventoryStatus": "Inventory Status",
+    "inStock": "In Stock",
+    "outOfStock": "Out of Stock",
+    "lowStock": "Low Stock",
+    "minLevel": "Minimum Level",
+    "details": "Item Information",
+    "id": "Product ID",
+    "createdAt": "Created Date",
+    "stockValue": "Stock Value",
     "itemName": "Item Name",
     "category": "Category",
     "price": "Price",

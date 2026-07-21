@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'language_selection.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'theme/typography.dart'; // Import our typography styles
+import 'language_selection.dart';
 
 class OnboardingScreen extends StatefulWidget {
   final bool skipAuth;
@@ -13,67 +13,70 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   final PageController _pageController = PageController(viewportFraction: 1.0);
   int _currentPage = 0;
-  late AnimationController _animationController;
+  late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
-  bool _isAnimating = false;
+  late AnimationController _floatController;
+
+  final Color _brandOrange = const Color(0xFFFF8A00);
+  final Color _bgGradientStart = const Color(0xFFFFFFFF);
+  final Color _bgGradientEnd = const Color(0xFFFFF5E6);
 
   final List<WalkthroughItem> _walkthroughItems = [
     WalkthroughItem(
       title: 'Track Your Inventory',
       description:
           'Monitor stock levels, add items, and organize your inventory categories in real-time.',
-      color: const Color(0xFFE0C6FF),
-      icon: Icons.inventory_2_outlined,
-      imagePath: 'assets/images/box.jpg',
+      type: WalkthroughType.inventory,
     ),
     WalkthroughItem(
-      title: 'Manage Sales & Invoices',
+      title: 'Manage Sales',
       description:
-          'Generate professional PDF invoices on the go and track customer orders easily.',
-      color: const Color(0xFFCED4FF),
-      icon: Icons.receipt_long_outlined,
+          'Create invoices, process orders, and manage your sales seamlessly.',
+      type: WalkthroughType.sales,
     ),
     WalkthroughItem(
-      title: 'Admin & Staff Controls',
+      title: 'Analyze Performance',
       description:
-          'Assign roles to your staff and monitor shop statistics from a secure admin dashboard.',
-      color: const Color(0xFFBFC8FF),
-      icon: Icons.admin_panel_settings_outlined,
+          'Get real-time insights and detailed reports to grow your business smarter.',
+      type: WalkthroughType.analytics,
     ),
     WalkthroughItem(
-      title: 'Streamline Your Business',
+      title: 'Secure & Reliable',
       description:
-          'Join us and simplify your sales, invoicing, and inventory operations today.',
-      color: const Color(0xFFD8C0FF),
-      icon: Icons.rocket_launch_outlined,
+          'Your data is safe with us. Enjoy a secure and reliable experience every day.',
+      type: WalkthroughType.security,
     ),
   ];
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
+    _fadeController = AnimationController(
       duration: const Duration(milliseconds: 400),
       vsync: this,
     );
-    _fadeAnimation =
-        Tween<double>(begin: 0.3, end: 1.0).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeIn,
-    ));
-    _animationController.forward();
+    _fadeAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
+      CurvedAnimation(parent: _fadeController, curve: Curves.easeIn),
+    );
+    _fadeController.forward();
 
-    // If skipAuth is true, navigate directly to language selection
+    // Smooth idle float animation for 3D card
+    _floatController = AnimationController(
+      duration: const Duration(seconds: 3),
+      vsync: this,
+    )..repeat(reverse: true);
+
     if (widget.skipAuth) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-              builder: (context) =>
-                  LanguageSelectionScreen(skipAuth: widget.skipAuth)),
+            builder: (context) =>
+                LanguageSelectionScreen(skipAuth: widget.skipAuth),
+          ),
         );
       });
     }
@@ -82,291 +85,255 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   @override
   void dispose() {
     _pageController.dispose();
-    _animationController.dispose();
+    _fadeController.dispose();
+    _floatController.dispose();
     super.dispose();
   }
 
   void _onPageChanged(int page) {
     setState(() {
       _currentPage = page;
-      _isAnimating = true;
     });
-    // Restart animation on page change
-    _animationController.reset();
-    _animationController.forward().then((_) {
-      setState(() {
-        _isAnimating = false;
-      });
-    });
+    _fadeController.reset();
+    _fadeController.forward();
   }
 
-  // Mark onboarding as completed in SharedPreferences
   Future<void> _markOnboardingComplete() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('onboardingComplete', true);
-      print('Onboarding marked as complete');
     } catch (e) {
-      print('Error marking onboarding as complete: $e');
+      debugPrint('Error marking onboarding complete: $e');
     }
   }
 
   void _onGetStartedPressed() async {
-    // Mark onboarding as completed
     await _markOnboardingComplete();
-
-    // Navigate to the language selection screen and wait for result
     if (!mounted) return;
-
-    final selectedLanguage = await Navigator.of(context).push(
+    Navigator.of(context).push(
       MaterialPageRoute(
-          builder: (context) => const LanguageSelectionScreen(skipAuth: false)),
+        builder: (context) => const LanguageSelectionScreen(skipAuth: false),
+      ),
     );
-
-    // Handle the selected language
   }
 
   void _onSwipeUpTapped() {
     if (_currentPage < _walkthroughItems.length - 1) {
-      _pageController.animateToPage(
-        _currentPage + 1,
-        duration: const Duration(milliseconds: 500),
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 450),
         curve: Curves.easeInOut,
       );
+    } else {
+      _onGetStartedPressed();
     }
   }
 
   void _onSkipPressed() async {
-    // Skip to the last page
+    await _markOnboardingComplete();
+    if (!mounted) return;
     _pageController.animateToPage(
       _walkthroughItems.length - 1,
       duration: const Duration(milliseconds: 400),
       curve: Curves.easeInOut,
     );
-
-    // Also mark onboarding as completed when skipping
-    await _markOnboardingComplete();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          const SizedBox(height: 40),
-          // Logo - Keep this static during transitions
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            alignment: Alignment.centerLeft,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'LOGO',
-                  style: AppTypography.h2,
-                ),
-                // Only show Skip button if not on the last page
-                if (_currentPage < _walkthroughItems.length - 1)
-                  GestureDetector(
-                    onTap: _onSkipPressed,
-                    child: Text(
-                      'Skip',
-                      style: AppTypography.smallButton,
+      body: PageView.builder(
+        scrollDirection: Axis.vertical, // Swipe UP navigation
+        controller: _pageController,
+        onPageChanged: _onPageChanged,
+        itemCount: _walkthroughItems.length,
+        itemBuilder: (context, index) {
+          final item = _walkthroughItems[index];
+          final isLastPage = index == _walkthroughItems.length - 1;
+
+          return Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [_bgGradientStart, _bgGradientEnd],
+              ),
+            ),
+            child: SafeArea(
+              child: Column(
+                children: [
+                  // Top Navigation Header
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24.0, vertical: 12.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Vector brand logo for perfect transparent blending
+                        BrandLogo(height: 34, color: _brandOrange),
+                        if (!isLastPage)
+                          GestureDetector(
+                            onTap: _onSkipPressed,
+                            child: Text(
+                              'Skip',
+                              style: GoogleFonts.urbanist(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF1E293B),
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
-              ],
-            ),
-          ),
 
-          // Only content inside PageView animates during transition
-          Expanded(
-            child: ClipRect(
-              child: PageView.builder(
-                controller: _pageController,
-                itemCount: _walkthroughItems.length,
-                onPageChanged: _onPageChanged,
-                scrollDirection: Axis.vertical,
-                physics: const ClampingScrollPhysics(),
-                pageSnapping: true,
-                padEnds: false,
-                itemBuilder: (context, index) {
-                  return WalkthroughPage(
-                    item: _walkthroughItems[index],
-                    onGetStartedPressed: _onGetStartedPressed,
-                    onSkipPressed: _onSkipPressed,
-                    onSwipeUpTapped: _onSwipeUpTapped,
-                    animation: _fadeAnimation,
-                    isLastPage: index == _walkthroughItems.length - 1,
-                    isAnimating: _isAnimating,
-                  );
-                },
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+                  // Middle Contents Section
+                  Expanded(
+                    child: FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Spacer(),
+                          // Floating 3D card widget
+                          AnimatedBuilder(
+                            animation: _floatController,
+                            builder: (context, child) {
+                              final floatVal = _floatController.value;
+                              return Transform.translate(
+                                offset: Offset(0, 6 * (1.0 - floatVal)),
+                                child: _build3DCard(item),
+                              );
+                            },
+                          ),
+                          const Spacer(),
 
-  Widget _buildBottomButtons() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(
-                  context,
-                  '/signup',
-                  arguments: {'selectedLanguage': 'en'},
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF333366),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: const Text('Create Account'),
-            ),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/signin');
-              },
-              style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFF333366),
-                side: const BorderSide(color: Color(0xFF333366)),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: const Text('Sign In'),
-            ),
-          ),
-          const SizedBox(height: 24),
-        ],
-      ),
-    );
-  }
-}
+                          // Title
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 24.0),
+                            child: Text(
+                              item.title,
+                              style: GoogleFonts.urbanist(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w800,
+                                color: _brandOrange,
+                                letterSpacing: -0.5,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
 
-class WalkthroughItem {
-  final String title;
-  final String description;
-  final Color color;
-  final IconData icon;
-  final String? imagePath;
-
-  WalkthroughItem({
-    required this.title,
-    required this.description,
-    required this.color,
-    required this.icon,
-    this.imagePath,
-  });
-}
-
-class WalkthroughPage extends StatelessWidget {
-  final WalkthroughItem item;
-  final VoidCallback onGetStartedPressed;
-  final VoidCallback onSkipPressed;
-  final VoidCallback onSwipeUpTapped;
-  final Animation<double> animation;
-  final bool isLastPage;
-  final bool isAnimating;
-
-  const WalkthroughPage({
-    super.key,
-    required this.item,
-    required this.onGetStartedPressed,
-    required this.onSkipPressed,
-    required this.onSwipeUpTapped,
-    required this.animation,
-    this.isLastPage = false,
-    this.isAnimating = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: FadeTransition(
-        opacity: animation,
-        child: Column(
-          children: [
-            const SizedBox(height: 24),
-
-            // Main Image with scroll indicator
-            Expanded(
-              flex: 2,
-              child: Stack(
-                children: [
-                  // Purple/blue gradient image
-                  Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          item.color.withOpacity(0.8),
-                          item.color.withOpacity(0.5),
+                          // Description
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 36.0),
+                            child: Text(
+                              item.description,
+                              style: GoogleFonts.urbanist(
+                                fontSize: 14,
+                                height: 1.45,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xFF64748B),
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          const Spacer(),
                         ],
                       ),
                     ),
-                    child: Stack(
+                  ),
+
+                  // Bottom Controls and Page Indicators
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Center abstract design
-                        Center(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: Container(
-                              width: 180,
-                              height: 180,
-                              decoration: BoxDecoration(
-                                gradient: RadialGradient(
-                                  colors: [
-                                    Colors.white.withOpacity(0.7),
-                                    item.color.withOpacity(0.2),
+                        isLastPage
+                            ? Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 32.0, vertical: 8.0),
+                                child: SizedBox(
+                                  width: double.infinity,
+                                  height: 50,
+                                  child: ElevatedButton(
+                                    onPressed: _onGetStartedPressed,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: _brandOrange,
+                                      foregroundColor: Colors.white,
+                                      elevation: 3,
+                                      shadowColor:
+                                          _brandOrange.withOpacity(0.4),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'Get Started',
+                                      style: GoogleFonts.urbanist(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : GestureDetector(
+                                onTap: _onSwipeUpTapped,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'Swipe Up',
+                                      style: GoogleFonts.urbanist(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w700,
+                                        color: const Color(0xFF64748B),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Container(
+                                      width: 38,
+                                      height: 38,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: _brandOrange
+                                                .withOpacity(0.15),
+                                            blurRadius: 10,
+                                            offset: const Offset(0, 4),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Icon(
+                                        Icons.keyboard_arrow_up_rounded,
+                                        color: _brandOrange,
+                                        size: 26,
+                                      ),
+                                    ),
                                   ],
-                                  radius: 0.8,
                                 ),
                               ),
-                              child: Stack(
-                                children: [
-                                  CustomPaint(
-                                    painter: CurvePainter(color: item.color),
-                                  ),
-                                  Center(
-                                    child: item.imagePath != null
-                                        ? ClipRRect(
-                                            borderRadius: BorderRadius.circular(16),
-                                            child: Image.asset(
-                                              item.imagePath!,
-                                              width: 140,
-                                              height: 140,
-                                              fit: BoxFit.cover,
-                                            ),
-                                          )
-                                        : Icon(
-                                            item.icon,
-                                            size: 72,
-                                            color: Colors.indigo,
-                                          ),
-                                  ),
-                                ],
+                        const SizedBox(height: 20),
+
+                        // Page Dots Indicator matching mockups
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(
+                            _walkthroughItems.length,
+                            (dotIndex) => Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 4),
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: _currentPage == dotIndex
+                                    ? _brandOrange
+                                    : _brandOrange.withOpacity(0.2),
                               ),
                             ),
                           ),
@@ -377,190 +344,407 @@ class WalkthroughPage extends StatelessWidget {
                 ],
               ),
             ),
+          );
+        },
+      ),
+    );
+  }
 
-            const SizedBox(height: 24),
-
-            // Title
-            Text(
-              item.title,
-              style: AppTypography.h1.copyWith(
-                color: Colors.indigo,
+  // 3D Card Container
+  Widget _build3DCard(WalkthroughItem item) {
+    return Container(
+      width: 220,
+      height: 220,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(44),
+        boxShadow: [
+          BoxShadow(
+            color: _brandOrange.withOpacity(0.10),
+            blurRadius: 32,
+            spreadRadius: 1,
+            offset: const Offset(0, 14),
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Background soft glowing aura
+          Container(
+            width: 160,
+            height: 160,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  _brandOrange.withOpacity(0.08),
+                  Colors.white,
+                ],
               ),
-              textAlign: TextAlign.center,
             ),
+          ),
 
-            const SizedBox(height: 16),
-
-            // Description
-            Text(
-              item.description,
-              style: AppTypography.regularText.copyWith(
-                color: Colors.black54,
-              ),
-              textAlign: TextAlign.center,
-            ),
-
-            // Increase space here to prevent overlap
-            const SizedBox(height: 50),
-
-            // Get Started button or Swipe Up indicator
-            if (isLastPage)
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: onGetStartedPressed,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF333366),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    textStyle: AppTypography.largeButton,
-                  ),
-                  child: const Text('Get Started'),
-                ),
-              )
-            else
-              Container(
-                height: 60, // Fixed height for SwipeUp container
-                alignment: Alignment.center,
-                child: GestureDetector(
-                  onTap: onSwipeUpTapped,
-                  child: const FloatingSwipeIndicator(),
-                ),
-              ),
-
-            const SizedBox(height: 20),
-          ],
-        ),
+          // Custom 3D Illustration
+          CustomPaint(
+            size: const Size(190, 190),
+            painter: Walkthrough3DPainter(
+                type: item.type, brandColor: _brandOrange),
+          ),
+        ],
       ),
     );
   }
 }
 
-class CurvePainter extends CustomPainter {
+// Transparent vector logo representing the orange fast-moving shopping cart
+class BrandLogo extends StatelessWidget {
+  final double height;
   final Color color;
 
-  CurvePainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    var paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.0;
-
-    var path = Path();
-
-    // Draw a curved design
-    path.moveTo(0, size.height * 0.7);
-    path.quadraticBezierTo(size.width * 0.25, size.height * 0.3,
-        size.width * 0.5, size.height * 0.5);
-    path.quadraticBezierTo(
-        size.width * 0.75, size.height * 0.7, size.width, size.height * 0.4);
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return true;
-  }
-}
-
-class FloatingSwipeIndicator extends StatefulWidget {
-  const FloatingSwipeIndicator({super.key});
-
-  @override
-  State<FloatingSwipeIndicator> createState() => _FloatingSwipeIndicatorState();
-}
-
-class _FloatingSwipeIndicatorState extends State<FloatingSwipeIndicator>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<Offset> _positionAnimation;
-  late Animation<double> _opacityAnimation;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(seconds: 2), // Slightly slower animation
-      vsync: this,
-    )..repeat(reverse: true);
-
-    _positionAnimation = Tween<Offset>(
-      begin: const Offset(0.0, 0.0),
-      end: const Offset(0.0, -0.3), // Reduced floating height
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    ));
-
-    _opacityAnimation = Tween<double>(
-      begin: 0.9,
-      end: 1.0, // Reduced opacity change
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    ));
-
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.05, // Reduced scale change
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    ));
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+  const BrandLogo({
+    super.key,
+    this.height = 36,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return SlideTransition(
-      position: _positionAnimation,
-      child: FadeTransition(
-        opacity: _opacityAnimation,
-        child: ScaleTransition(
-          scale: _scaleAnimation,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+    return SizedBox(
+      height: height,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Speed lines
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                'Swipe Up',
-                style: AppTypography.popupParagraphSentence,
-              ),
-              const SizedBox(height: 2),
               Container(
-                padding: const EdgeInsets.all(2),
+                width: 14,
+                height: 2.2,
                 decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF333366).withOpacity(0.15),
-                      spreadRadius: 1,
-                      blurRadius: 2,
-                      offset: const Offset(0, 1),
-                    )
-                  ],
+                  color: color,
+                  borderRadius: BorderRadius.circular(2),
                 ),
-                child: const Icon(
-                  Icons.keyboard_arrow_up,
-                  color: Color(0xFF333366),
-                  size: 24,
+              ),
+              const SizedBox(height: 3),
+              Container(
+                width: 20,
+                height: 2.2,
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 3),
+              Container(
+                width: 15,
+                height: 2.2,
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ],
           ),
-        ),
+          const SizedBox(width: 5),
+          // Shopping Cart Icon
+          Icon(
+            Icons.shopping_cart_rounded,
+            size: height * 0.82,
+            color: color,
+          ),
+        ],
       ),
     );
   }
+}
+
+// 3D Isometric illustrations Custom Painter
+class Walkthrough3DPainter extends CustomPainter {
+  final WalkthroughType type;
+  final Color brandColor;
+
+  Walkthrough3DPainter({required this.type, required this.brandColor});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    switch (type) {
+      case WalkthroughType.inventory:
+        _paintInventory(canvas, size);
+        break;
+      case WalkthroughType.sales:
+        _paintSales(canvas, size);
+        break;
+      case WalkthroughType.analytics:
+        _paintAnalytics(canvas, size);
+        break;
+      case WalkthroughType.security:
+        _paintSecurity(canvas, size);
+        break;
+    }
+  }
+
+  void _paintInventory(Canvas canvas, Size size) {
+    final cx = size.width / 2;
+    final cy = size.height / 2 + 10;
+
+    // Draw Clipboard Sheet behind box
+    final docPath = Path()
+      ..moveTo(cx - 30, cy - 65)
+      ..lineTo(cx + 35, cy - 65)
+      ..lineTo(cx + 35, cy + 15)
+      ..lineTo(cx - 30, cy + 15)
+      ..close();
+
+    final docShadow = Paint()
+      ..color = Colors.black.withOpacity(0.04)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+    canvas.drawPath(docPath, docShadow);
+
+    final docPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [brandColor.withOpacity(0.15), Colors.white],
+      ).createShader(Rect.fromLTWH(cx - 30, cy - 65, 65, 80));
+    canvas.drawPath(docPath, docPaint);
+
+    final linePaint = Paint()
+      ..color = brandColor.withOpacity(0.4)
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round;
+
+    for (int i = 0; i < 3; i++) {
+      final ly = cy - 45 + (i * 18);
+      canvas.drawLine(Offset(cx - 15, ly), Offset(cx + 20, ly), linePaint);
+      canvas.drawCircle(Offset(cx - 22, ly), 3, Paint()..color = brandColor);
+    }
+
+    // 3D Isometric cardboard box
+    final boxPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [brandColor.withOpacity(0.95), brandColor],
+      ).createShader(Rect.fromLTWH(cx - 45, cy + 10, 90, 55));
+
+    final boxLidPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Colors.white, brandColor.withOpacity(0.1)],
+      ).createShader(Rect.fromLTWH(cx - 45, cy - 5, 45, 35));
+
+    final frontLeft = Path()
+      ..moveTo(cx - 45, cy + 10)
+      ..lineTo(cx, cy + 30)
+      ..lineTo(cx, cy + 65)
+      ..lineTo(cx - 45, cy + 45)
+      ..close();
+    canvas.drawPath(frontLeft, boxPaint);
+
+    final frontRight = Path()
+      ..moveTo(cx, cy + 30)
+      ..lineTo(cx + 45, cy + 10)
+      ..lineTo(cx + 45, cy + 45)
+      ..lineTo(cx, cy + 65)
+      ..close();
+    canvas.drawPath(frontRight, boxPaint);
+
+    canvas.drawPath(
+      frontRight,
+      Paint()..color = Colors.black.withOpacity(0.12),
+    );
+
+    final lidLeft = Path()
+      ..moveTo(cx - 45, cy + 10)
+      ..lineTo(cx - 10, cy - 5)
+      ..lineTo(cx, cy + 30)
+      ..close();
+    canvas.drawPath(lidLeft, boxLidPaint);
+  }
+
+  void _paintSales(Canvas canvas, Size size) {
+    final cx = size.width / 2;
+    final cy = size.height / 2 + 5;
+
+    final speedPaint = Paint()
+      ..color = brandColor.withOpacity(0.35)
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawLine(
+        Offset(cx - 70, cy - 20), Offset(cx - 35, cy - 20), speedPaint);
+    canvas.drawLine(Offset(cx - 80, cy), Offset(cx - 45, cy), speedPaint);
+    canvas.drawLine(
+        Offset(cx - 65, cy + 20), Offset(cx - 35, cy + 20), speedPaint);
+
+    final cartPaint = Paint()
+      ..color = brandColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4.5
+      ..strokeCap = StrokeCap.round;
+
+    final basketPath = Path()
+      ..moveTo(cx - 35, cy - 30)
+      ..lineTo(cx + 25, cy - 30)
+      ..lineTo(cx + 10, cy + 15)
+      ..lineTo(cx - 25, cy + 15)
+      ..close();
+    canvas.drawPath(basketPath, cartPaint);
+
+    final wheelPaint = Paint()..color = brandColor;
+    canvas.drawCircle(Offset(cx - 15, cy + 28), 7, wheelPaint);
+    canvas.drawCircle(Offset(cx + 5, cy + 28), 7, wheelPaint);
+
+    final framePath = Path()
+      ..moveTo(cx - 35, cy - 30)
+      ..lineTo(cx - 45, cy - 38)
+      ..lineTo(cx - 48, cy - 38);
+    canvas.drawPath(framePath, cartPaint);
+
+    final packagePaint = Paint()
+      ..shader = LinearGradient(
+        colors: [brandColor.withOpacity(0.95), brandColor.withOpacity(0.7)],
+      ).createShader(Rect.fromLTWH(cx - 15, cy - 20, 25, 25));
+    final pkgPath = Path()
+      ..moveTo(cx - 15, cy - 20)
+      ..lineTo(cx + 10, cy - 20)
+      ..lineTo(cx + 5, cy + 5)
+      ..lineTo(cx - 10, cy + 5)
+      ..close();
+    canvas.drawPath(pkgPath, packagePaint);
+  }
+
+  void _paintAnalytics(Canvas canvas, Size size) {
+    final cx = size.width / 2;
+    final cy = size.height / 2 + 5;
+
+    final clipPath = Path()
+      ..moveTo(cx - 40, cy - 50)
+      ..lineTo(cx + 40, cy - 50)
+      ..lineTo(cx + 40, cy + 45)
+      ..lineTo(cx - 40, cy + 45)
+      ..close();
+
+    canvas.drawPath(
+      clipPath,
+      Paint()
+        ..color = Colors.black.withOpacity(0.04)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
+    );
+
+    canvas.drawPath(
+      clipPath,
+      Paint()..color = brandColor.withOpacity(0.12),
+    );
+
+    final clipTop = Path()
+      ..moveTo(cx - 15, cy - 50)
+      ..lineTo(cx + 15, cy - 50)
+      ..lineTo(cx + 10, cy - 42)
+      ..lineTo(cx - 10, cy - 42)
+      ..close();
+    canvas.drawPath(clipTop, Paint()..color = brandColor);
+
+    _draw3DBar(canvas, cx - 22, cy + 30, 32, const Color(0xFFFFB74D));
+    _draw3DBar(canvas, cx, cy + 30, 52, brandColor);
+    _draw3DBar(canvas, cx + 22, cy + 30, 72, const Color(0xFFE65100));
+  }
+
+  void _draw3DBar(
+      Canvas canvas, double x, double y, double height, Color color) {
+    final barW = 12.0;
+
+    final front = Path()
+      ..moveTo(x - barW / 2, y)
+      ..lineTo(x + barW / 2, y)
+      ..lineTo(x + barW / 2, y - height)
+      ..lineTo(x - barW / 2, y - height)
+      ..close();
+    canvas.drawPath(front, Paint()..color = color);
+
+    final topFacet = Path()
+      ..moveTo(x - barW / 2, y - height)
+      ..lineTo(x + barW / 2, y - height)
+      ..lineTo(x + barW / 2 + 4, y - height - 4)
+      ..lineTo(x - barW / 2 + 4, y - height - 4)
+      ..close();
+    canvas.drawPath(topFacet, Paint()..color = Colors.white.withOpacity(0.4));
+  }
+
+  void _paintSecurity(Canvas canvas, Size size) {
+    final cx = size.width / 2;
+    final cy = size.height / 2 + 5;
+
+    final shieldPath = Path()
+      ..moveTo(cx, cy - 55)
+      ..quadraticBezierTo(cx + 42, cy - 55, cx + 42, cy - 10)
+      ..quadraticBezierTo(cx + 42, cy + 30, cx, cy + 55)
+      ..quadraticBezierTo(cx - 42, cy + 30, cx - 42, cy - 10)
+      ..quadraticBezierTo(cx - 42, cy - 55, cx, cy - 55)
+      ..close();
+
+    canvas.drawPath(
+      shieldPath,
+      Paint()
+        ..color = brandColor.withOpacity(0.18)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
+    );
+
+    canvas.drawPath(
+      shieldPath,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [brandColor.withOpacity(0.95), brandColor],
+        ).createShader(Rect.fromLTWH(cx - 42, cy - 55, 84, 110)),
+    );
+
+    canvas.drawPath(
+      shieldPath,
+      Paint()
+        ..color = Colors.white.withOpacity(0.12)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3,
+    );
+
+    final checkPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 5.5
+      ..strokeCap = StrokeCap.round;
+
+    final checkPath = Path()
+      ..moveTo(cx - 15, cy - 2)
+      ..lineTo(cx - 3, cy + 10)
+      ..lineTo(cx + 16, cy - 14);
+    canvas.drawPath(checkPath, checkPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+enum WalkthroughType { inventory, sales, analytics, security }
+
+class WalkthroughItem {
+  final String title;
+  final String description;
+  final WalkthroughType type;
+
+  WalkthroughItem({
+    required this.title,
+    required this.description,
+    required this.type,
+  });
 }

@@ -98,7 +98,7 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
           style: GoogleFonts.urbanist(
             fontWeight: FontWeight.w600,
             fontSize: 20.0,
-            color: const Color(0xFF333366),
+            color: const Color(0xFFFF8A00),
           ),
         ),
         backgroundColor: Colors.white,
@@ -163,7 +163,7 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
                         style: GoogleFonts.urbanist(
                           fontWeight: FontWeight.bold,
                           fontSize: 18.0,
-                          color: const Color(0xFF333366),
+                          color: const Color(0xFFFF8A00),
                         ),
                       ),
                       const SizedBox(height: 4),

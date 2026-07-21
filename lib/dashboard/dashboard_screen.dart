@@ -10,6 +10,7 @@ import '../providers/notification_provider.dart';
 import '../providers/item_provider.dart';
 import '../providers/category_provider.dart';
 import '../theme/typography.dart';
+import '../theme/app_theme.dart';
 import 'components/date_selector.dart';
 import 'components/inbound_card.dart';
 import 'components/outbound_card.dart';
@@ -177,14 +178,6 @@ class _DashboardScreenState extends State<DashboardScreen> with AutomaticKeepAli
           isLoadingStats = false;
         });
         
-        // Show regeneration notification
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Transaction data has been regenerated.'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        
         debugPrint("Dashboard: Updated state with - Inbound: $inboundQuantity units, Outbound: $outboundQuantity units");
       }
     } catch (e) {
@@ -215,34 +208,42 @@ class _DashboardScreenState extends State<DashboardScreen> with AutomaticKeepAli
     super.build(context); // Required for AutomaticKeepAliveClientMixin
     
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: AppTheme.secondaryBackgroundColor,
       appBar: widget.isInMainNavigation 
         ? AppBar(
             title: Text(
               'navigation.dashboard'.tr,
-              style: TextStyle(
+              style: GoogleFonts.urbanist(
                 fontSize: _calculateFontSize('navigation.dashboard'.tr, 20.0),
                 fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimary,
               ),
               overflow: TextOverflow.ellipsis,
             ),
             automaticallyImplyLeading: false,
+            backgroundColor: AppTheme.backgroundColor,
+            elevation: 0,
+            scrolledUnderElevation: 0,
             actions: [
-              const NotificationIcon(
+              NotificationIcon(
                 useContainerBackground: false,
-                iconColor: Colors.black,
+                iconColor: AppTheme.textPrimary,
               ),
             ],
           )
         : AppBar(
             title: Text(
               'navigation.dashboard'.tr,
-              style: TextStyle(
+              style: GoogleFonts.urbanist(
                 fontSize: _calculateFontSize('navigation.dashboard'.tr, 20.0),
                 fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimary,
               ),
               overflow: TextOverflow.ellipsis,
             ),
+            backgroundColor: AppTheme.backgroundColor,
+            elevation: 0,
+            scrolledUnderElevation: 0,
           ),
       floatingActionButton: FloatingActionButton(
         heroTag: 'dashboard_fab',
@@ -252,14 +253,14 @@ class _DashboardScreenState extends State<DashboardScreen> with AutomaticKeepAli
             MaterialPageRoute(builder: (context) => const UseStockScreen()),
           );
         },
-        backgroundColor: const Color(0xFF333366),
+        backgroundColor: AppTheme.primaryColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         child: const Icon(Icons.inventory_2_outlined, color: Colors.white),
       ),
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: _loadStatistics,
           child: SingleChildScrollView(
-            // Add physics to ensure it's scrollable even when content doesn't overflow
             physics: const AlwaysScrollableScrollPhysics(),
             child: ConstrainedBox(
               constraints: BoxConstraints(
@@ -273,7 +274,7 @@ class _DashboardScreenState extends State<DashboardScreen> with AutomaticKeepAli
                   // Date Selector with Inventory Summary heading
                   Padding(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                        const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -282,9 +283,9 @@ class _DashboardScreenState extends State<DashboardScreen> with AutomaticKeepAli
                           child: Text(
                             'inventory.itemDetails'.tr,
                             style: GoogleFonts.urbanist(
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.bold,
                               fontSize: _calculateFontSize('inventory.itemDetails'.tr, 18.0),
-                              color: const Color(0xFF333366),
+                              color: AppTheme.textPrimary,
                             ),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
@@ -331,6 +332,7 @@ class _DashboardScreenState extends State<DashboardScreen> with AutomaticKeepAli
                           ),
                   ),
 
+                  const SizedBox(height: 80),
                   // Your other dashboard content below...
                 ],
               ),
@@ -351,7 +353,7 @@ class _DashboardScreenState extends State<DashboardScreen> with AutomaticKeepAli
           'dashboard.exportData'.translate(),
           style: GoogleFonts.urbanist(
             fontWeight: FontWeight.bold,
-            color: const Color(0xFF333366),
+            color: const Color(0xFFFF8A00),
           ),
         ),
         content: Column(
@@ -408,12 +410,12 @@ class _DashboardScreenState extends State<DashboardScreen> with AutomaticKeepAli
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: const Color(0xFF333366).withOpacity(0.1),
+                color: const Color(0xFFFFF3E0),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
                 icon,
-                color: const Color(0xFF333366),
+                color: const Color(0xFFFF8A00),
                 size: 22,
               ),
             ),

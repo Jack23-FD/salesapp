@@ -140,13 +140,10 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
             icon: const Icon(Icons.arrow_back_ios, color: Colors.black54),
             onPressed: () => Navigator.pop(context),
           ),
-          title: const Text(
-            'LOGO',
-            style: TextStyle(
-              color: Colors.black,
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-            ),
+          title: Image.asset(
+            'assets/images/logo.png',
+            height: 32,
+            fit: BoxFit.contain,
           ),
           centerTitle: true,
         ),
@@ -195,7 +192,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                               _isDropdownOpen
                                   ? Icons.keyboard_arrow_up
                                   : Icons.keyboard_arrow_down,
-                              color: const Color(0xFF333366),
+                              color: const Color(0xFFFF8A00),
                             ),
                           ],
                         ),
@@ -246,7 +243,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                                             horizontal: 16, vertical: 12),
                                         decoration: BoxDecoration(
                                           color: _selectedLanguage == language['name']
-                                              ? const Color(0xFF333366)
+                                              ? const Color(0xFFFF8A00)
                                                   .withOpacity(0.1)
                                               : Colors.transparent,
                                           border: Border(
@@ -268,7 +265,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                                             if (_selectedLanguage == language['name'])
                                               const Icon(
                                                 Icons.check_circle,
-                                                color: Color(0xFF333366),
+                                                color: const Color(0xFFFF8A00),
                                                 size: 20,
                                               ),
                                           ],
@@ -291,7 +288,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                   child: ElevatedButton(
                     onPressed: _saveLanguagePreference,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF333366),
+                      backgroundColor: const Color(0xFFFF8A00),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(

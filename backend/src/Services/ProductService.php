@@ -6,18 +6,22 @@ use App\Repositories\ProductRepository;
 use App\Utils\Response;
 use Exception;
 
-class ProductService {
+class ProductService
+{
     private ProductRepository $productRepo;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->productRepo = new ProductRepository();
     }
 
-    public function listProducts(string $companyId, ?string $categoryId = null, ?string $search = null): array {
+    public function listProducts(string $companyId, ?string $categoryId = null, ?string $search = null): array
+    {
         return $this->productRepo->listByCompany($companyId, $categoryId, $search);
     }
 
-    public function createProduct(array $userContext, array $data): array {
+    public function createProduct(array $userContext, array $data): array
+    {
         if (empty($data['name']) || empty($data['categoryId']) || !isset($data['price'])) {
             Response::badRequest("Missing required product fields (name, categoryId, price).");
         }
@@ -74,7 +78,8 @@ class ProductService {
         }
     }
 
-    public function updateProduct(string $id, array $userContext, array $data): bool {
+    public function updateProduct(string $id, array $userContext, array $data): bool
+    {
         if (empty($data['name']) || empty($data['categoryId']) || !isset($data['price'])) {
             Response::badRequest("Missing required product fields.");
         }
@@ -112,7 +117,8 @@ class ProductService {
         }
     }
 
-    public function deleteProduct(string $id, array $userContext): bool {
+    public function deleteProduct(string $id, array $userContext): bool
+    {
         $existing = $this->productRepo->findById($id, $userContext['company_id']);
         if (!$existing) {
             Response::notFound("Product not found.");

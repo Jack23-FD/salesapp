@@ -170,7 +170,7 @@ class _UseStockScreenState extends State<UseStockScreen> {
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF333366),
+                    color: const Color(0xFFFF8A00),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -210,14 +210,14 @@ class _UseStockScreenState extends State<UseStockScreen> {
                             controller: quantityController,
                             decoration: InputDecoration(
                               labelText: 'Quantity',
-                              labelStyle: const TextStyle(color: Color(0xFF333366)),
+                              labelStyle: const TextStyle(color: const Color(0xFFFF8A00)),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                borderSide: const BorderSide(color: Color(0xFF333366)),
+                                borderSide: const BorderSide(color: const Color(0xFFFF8A00)),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                borderSide: const BorderSide(color: Color(0xFF333366), width: 2),
+                                borderSide: const BorderSide(color: const Color(0xFFFF8A00), width: 2),
                               ),
                               contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 12, vertical: 16),
@@ -267,7 +267,7 @@ class _UseStockScreenState extends State<UseStockScreen> {
                                 style: GoogleFonts.urbanist(
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF333366),
+                                  color: const Color(0xFFFF8A00),
                                 ),
                               ),
                             ],
@@ -289,7 +289,7 @@ class _UseStockScreenState extends State<UseStockScreen> {
                                 style: GoogleFonts.urbanist(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF333366),
+                                  color: const Color(0xFFFF8A00),
                                 ),
                               ),
                             ],
@@ -304,7 +304,7 @@ class _UseStockScreenState extends State<UseStockScreen> {
                     TextButton(
                       onPressed: () => Navigator.pop(context),
                       style: TextButton.styleFrom(
-                        foregroundColor: const Color(0xFF333366),
+                        foregroundColor: const Color(0xFFFF8A00),
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 10),
                       ),
@@ -334,7 +334,7 @@ class _UseStockScreenState extends State<UseStockScreen> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF333366),
+                        backgroundColor: const Color(0xFFFF8A00),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 10),
@@ -633,7 +633,7 @@ class _UseStockScreenState extends State<UseStockScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF333366)),
+          icon: const Icon(Icons.arrow_back, color: const Color(0xFFFF8A00)),
           onPressed: () {
             if (_showBillSummary) {
               // Return to the main outbound screen from bill summary
@@ -650,7 +650,7 @@ class _UseStockScreenState extends State<UseStockScreen> {
         title: Text(
           _showBillSummary ? 'Bill Summary' : 'useStockScreen.title'.tr,
           style: const TextStyle(
-            color: Color(0xFF333366),
+            color: const Color(0xFFFF8A00),
             fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
@@ -725,7 +725,7 @@ class _UseStockScreenState extends State<UseStockScreen> {
           margin: const EdgeInsets.only(top: 16, left: 16, right: 16),
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
           decoration: BoxDecoration(
-            color: const Color(0xFF333366),
+            color: const Color(0xFFFF8A00),
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(12),
               topRight: Radius.circular(12),
@@ -832,7 +832,7 @@ class _UseStockScreenState extends State<UseStockScreen> {
                       style: GoogleFonts.urbanist(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF333366),
+                        color: const Color(0xFFFF8A00),
                       ),
                     ),
                     Text(
@@ -840,7 +840,7 @@ class _UseStockScreenState extends State<UseStockScreen> {
                       style: GoogleFonts.urbanist(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF333366),
+                        color: const Color(0xFFFF8A00),
                       ),
                     ),
                   ],
@@ -852,7 +852,7 @@ class _UseStockScreenState extends State<UseStockScreen> {
                   child: ElevatedButton(
                     onPressed: _processOutbound,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF333366),
+                backgroundColor: const Color(0xFFFF8A00),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -890,7 +890,7 @@ class _UseStockScreenState extends State<UseStockScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFF333366),
+                color: const Color(0xFFFF8A00),
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
@@ -957,7 +957,7 @@ class _UseStockScreenState extends State<UseStockScreen> {
                             'Product',
                             style: GoogleFonts.urbanist(
                               fontWeight: FontWeight.w600,
-                        color: const Color(0xFF333366),
+                        color: const Color(0xFFFF8A00),
                             ),
                           ),
                         ),
@@ -967,7 +967,7 @@ class _UseStockScreenState extends State<UseStockScreen> {
                             'Qty',
                             style: GoogleFonts.urbanist(
                               fontWeight: FontWeight.w600,
-                              color: const Color(0xFF333366),
+                              color: const Color(0xFFFF8A00),
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -978,7 +978,7 @@ class _UseStockScreenState extends State<UseStockScreen> {
                             'Price',
                             style: GoogleFonts.urbanist(
                               fontWeight: FontWeight.w600,
-                              color: const Color(0xFF333366),
+                              color: const Color(0xFFFF8A00),
                             ),
                             textAlign: TextAlign.right,
                           ),
@@ -1079,7 +1079,7 @@ class _UseStockScreenState extends State<UseStockScreen> {
                               '${(outboundItem.item.price * outboundItem.quantity).toStringAsFixed(2)} €',
                               style: GoogleFonts.urbanist(
                                 fontWeight: FontWeight.w600,
-                                color: const Color(0xFF333366),
+                                color: const Color(0xFFFF8A00),
                               ),
                               textAlign: TextAlign.right,
                     ),
@@ -1126,7 +1126,7 @@ class _UseStockScreenState extends State<UseStockScreen> {
                               style: GoogleFonts.urbanist(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,
-                                color: const Color(0xFF333366),
+                                color: const Color(0xFFFF8A00),
                               ),
                             ),
                             Text(
@@ -1134,7 +1134,7 @@ class _UseStockScreenState extends State<UseStockScreen> {
                               style: GoogleFonts.urbanist(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,
-                                color: const Color(0xFF333366),
+                                color: const Color(0xFFFF8A00),
                               ),
                             ),
                           ],
@@ -1170,7 +1170,7 @@ class _UseStockScreenState extends State<UseStockScreen> {
                     style: GoogleFonts.urbanist(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF333366),
+                      color: const Color(0xFFFF8A00),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -1191,11 +1191,11 @@ class _UseStockScreenState extends State<UseStockScreen> {
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
                                 color: _selectedPaymentMethod == 'cash' 
-                                  ? const Color(0xFF333366).withOpacity(0.1)
+                                  ? const Color(0xFFFFF3E0)
                                   : Colors.white,
                                 border: Border.all(
                                   color: _selectedPaymentMethod == 'cash' 
-                                    ? const Color(0xFF333366)
+                                    ? const Color(0xFFFF8A00)
                                     : Colors.grey[300]!,
                                   width: 1,
                                 ),
@@ -1209,11 +1209,11 @@ class _UseStockScreenState extends State<UseStockScreen> {
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       color: _selectedPaymentMethod == 'cash'
-                                        ? const Color(0xFF333366)
+                                        ? const Color(0xFFFF8A00)
                                         : Colors.white,
                                       border: Border.all(
                                         color: _selectedPaymentMethod == 'cash'
-                                          ? const Color(0xFF333366)
+                                          ? const Color(0xFFFF8A00)
                                           : Colors.grey[400]!,
                                         width: 2,
                                       ),
@@ -1226,7 +1226,7 @@ class _UseStockScreenState extends State<UseStockScreen> {
                         Icon(
                                     Icons.payments_outlined,
                                     color: _selectedPaymentMethod == 'cash'
-                                      ? const Color(0xFF333366)
+                                      ? const Color(0xFFFF8A00)
                                       : Colors.grey[600],
                                   ),
                                   const SizedBox(width: 8),
@@ -1236,7 +1236,7 @@ class _UseStockScreenState extends State<UseStockScreen> {
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
                                       color: _selectedPaymentMethod == 'cash'
-                                        ? const Color(0xFF333366)
+                                        ? const Color(0xFFFF8A00)
                                         : Colors.grey[700],
                           ),
                         ),
@@ -1396,7 +1396,7 @@ class _UseStockScreenState extends State<UseStockScreen> {
                     style: GoogleFonts.urbanist(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF333366),
+                      color: const Color(0xFFFF8A00),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -1407,17 +1407,17 @@ class _UseStockScreenState extends State<UseStockScreen> {
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     decoration: InputDecoration(
                       labelText: 'Amount Received',
-                      labelStyle: TextStyle(color: const Color(0xFF333366)),
+                      labelStyle: TextStyle(color: const Color(0xFFFF8A00)),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: Color(0xFF333366)),
+                        borderSide: const BorderSide(color: const Color(0xFFFF8A00)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: Color(0xFF333366), width: 2),
+                        borderSide: const BorderSide(color: const Color(0xFFFF8A00), width: 2),
                       ),
                       suffixText: '€',
-                      prefixIcon: const Icon(Icons.euro, color: Color(0xFF333366)),
+                      prefixIcon: const Icon(Icons.euro, color: const Color(0xFFFF8A00)),
                       filled: true,
                       fillColor: Colors.grey[50],
                     ),
@@ -1498,7 +1498,7 @@ class _UseStockScreenState extends State<UseStockScreen> {
                     icon: Icon(Icons.print),
                     label: Text('Print Receipt'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF333366),
+                      backgroundColor: const Color(0xFFFF8A00),
                       foregroundColor: Colors.white,
                       padding: EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
@@ -1655,7 +1655,7 @@ class _UseStockScreenState extends State<UseStockScreen> {
                     '${totalPrice.toStringAsFixed(2)} €',
                     style: GoogleFonts.urbanist(
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF333366),
+                      color: const Color(0xFFFF8A00),
                     ),
                     textAlign: TextAlign.right,
                   ),

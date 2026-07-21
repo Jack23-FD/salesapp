@@ -9,7 +9,9 @@ import 'providers/item_provider.dart';
 import 'providers/category_provider.dart';
 import 'models/item.dart';
 import 'main.dart'; // Import main.dart for MainNavigationController
-import 'services/localization_service.dart'; // Import localization service
+import 'services/localization_service.dart';
+import 'theme/app_theme.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 // Define sort option constants
 const String kRelevance = 'relevance';
@@ -455,7 +457,7 @@ class _SearchScreenState extends State<SearchScreen>
                               Expanded(
                                 child: ElevatedButton(
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF333366),
+                                    backgroundColor: const Color(0xFFFF8A00),
                                   ),
                                   onPressed: () {
                                     // Apply filters
@@ -511,14 +513,15 @@ class _SearchScreenState extends State<SearchScreen>
     ];
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.secondaryBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppTheme.backgroundColor,
         elevation: 0,
+        scrolledUnderElevation: 0,
         titleSpacing: 4,
         leadingWidth: 40,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black, size: 22),
+          icon: const Icon(Icons.arrow_back, color: AppTheme.textPrimary, size: 22),
           padding: EdgeInsets.zero,
           onPressed: () {
             if (widget.isInMainNavigation) {
@@ -537,15 +540,16 @@ class _SearchScreenState extends State<SearchScreen>
             animation: _animation,
             builder: (context, child) {
               return Container(
-                height: 45,
+                height: 44,
                 margin: const EdgeInsets.symmetric(horizontal: 6),
                 padding: const EdgeInsets.only(left: 4, right: 4),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(22.5),
+                  color: AppTheme.secondaryBackgroundColor,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: AppTheme.borderColor),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
+                      color: Colors.black.withOpacity(0.01),
                       spreadRadius: _animation.value * 2,
                       blurRadius: _animation.value * 5,
                       offset: const Offset(0, 2),
@@ -559,12 +563,12 @@ class _SearchScreenState extends State<SearchScreen>
                         controller: _searchController,
                         focusNode: _searchFocusNode,
                         textInputAction: TextInputAction.search,
-                        style: const TextStyle(fontSize: 14),
+                        style: GoogleFonts.urbanist(fontSize: 14, color: AppTheme.textPrimary, fontWeight: FontWeight.w600),
                         textAlignVertical: TextAlignVertical.center,
                         decoration: InputDecoration(
                           hintText: LocalizationService.translate('search.searchPlaceholder'),
-                          hintStyle: TextStyle(
-                            color: Colors.grey.shade500,
+                          hintStyle: GoogleFonts.urbanist(
+                            color: AppTheme.textSecondary,
                             fontSize: 14,
                           ),
                           isDense: true,
@@ -574,10 +578,10 @@ class _SearchScreenState extends State<SearchScreen>
                           border: InputBorder.none,
                           prefixIconConstraints:
                               const BoxConstraints(minWidth: 40, minHeight: 36),
-                          prefixIcon: Padding(
-                            padding: const EdgeInsets.only(left: 4, right: 4),
+                          prefixIcon: const Padding(
+                            padding: EdgeInsets.only(left: 4, right: 4),
                             child: Icon(Icons.search,
-                                color: const Color(0xFF333366), size: 20),
+                                color: AppTheme.textPrimary, size: 20),
                           ),
                           suffixIconConstraints:
                               const BoxConstraints(minWidth: 40, minHeight: 36),
@@ -586,7 +590,7 @@ class _SearchScreenState extends State<SearchScreen>
                                   padding: const EdgeInsets.only(right: 4),
                                   child: IconButton(
                                     icon: const Icon(Icons.clear,
-                                        color: Colors.grey, size: 20),
+                                        color: AppTheme.textSecondary, size: 20),
                                     onPressed: _clearSearch,
                                     padding: EdgeInsets.zero,
                                     constraints: const BoxConstraints(
@@ -605,7 +609,7 @@ class _SearchScreenState extends State<SearchScreen>
         actions: [
           IconButton(
             icon: const Icon(Icons.qr_code_scanner,
-                color: Colors.black, size: 22),
+                color: AppTheme.textPrimary, size: 22),
             padding: const EdgeInsets.symmetric(horizontal: 16),
             constraints: const BoxConstraints(),
             onPressed: () {
@@ -628,30 +632,29 @@ class _SearchScreenState extends State<SearchScreen>
               children: [
                 InkWell(
                   onTap: _showAdvancedSearch,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(10),
                   child: Container(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                      border: Border.all(
-                          color: const Color(0xFF333366).withOpacity(0.3)),
-                      borderRadius: BorderRadius.circular(20),
+                      color: AppTheme.primaryColor,
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.tune,
                           size: 16,
-                          color: const Color(0xFF333366).withOpacity(0.8),
+                          color: Colors.white,
                         ),
                         const SizedBox(width: 4),
                         Text(
                           LocalizationService.translate('search.filters'),
                           style: const TextStyle(
-                            color: Color(0xFF333366),
+                            color: Colors.white,
                             fontSize: 13,
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],
@@ -672,7 +675,7 @@ class _SearchScreenState extends State<SearchScreen>
                       isDense: true,
                       underline: Container(),
                       icon: const Icon(Icons.arrow_drop_down,
-                          color: Color(0xFF333366), size: 18),
+                          color: AppTheme.textPrimary, size: 18),
                       items: sortOptions.map((option) {
                         return DropdownMenuItem<String>(
                           value: option['value'] as String,
@@ -680,7 +683,8 @@ class _SearchScreenState extends State<SearchScreen>
                             option['display'] as String,
                             style: const TextStyle(
                               fontSize: 13,
-                              color: Color(0xFF333366),
+                              color: AppTheme.textPrimary,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         );
@@ -710,18 +714,18 @@ class _SearchScreenState extends State<SearchScreen>
                 runSpacing: 8,
                 children: _filterOptions.map((filter) {
                   return Chip(
-                    backgroundColor: const Color(0xFF333366).withOpacity(0.1),
+                    backgroundColor: const Color(0xFFFFF3E0),
                     label: Text(
                       filter,
                       style: const TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF333366),
+                        color: const Color(0xFFFF8A00),
                       ),
                     ),
                     deleteIcon: const Icon(
                       Icons.close,
                       size: 14,
-                      color: Color(0xFF333366),
+                      color: const Color(0xFFFF8A00),
                     ),
                     onDeleted: () {
                       // Remove filter
@@ -755,7 +759,7 @@ class _SearchScreenState extends State<SearchScreen>
           : BottomNavigationBar(
               currentIndex: 2, // Search tab is active
               type: BottomNavigationBarType.fixed,
-              selectedItemColor: const Color(0xFF333366),
+              selectedItemColor: const Color(0xFFFF8A00),
               unselectedItemColor: Colors.grey,
               items: [
                 BottomNavigationBarItem(
@@ -799,7 +803,7 @@ class _SearchScreenState extends State<SearchScreen>
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF333366)),
+            valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFFFF8A00)),
           ),
           const SizedBox(height: 16),
           Text(
@@ -842,7 +846,7 @@ class _SearchScreenState extends State<SearchScreen>
                   child: Text(
                     LocalizationService.translate('search.clearAll'),
                     style: const TextStyle(
-                      color: Color(0xFF333366),
+                      color: AppTheme.textSecondary,
                       fontSize: 13,
                     ),
                   ),
@@ -949,14 +953,14 @@ class _SearchScreenState extends State<SearchScreen>
               final spans = _getHighlightedText(result.item.name, searchTerm);
 
               return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                elevation: 0.5,
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  side: BorderSide(color: Colors.grey.shade200),
+                  borderRadius: BorderRadius.circular(16),
+                  side: const BorderSide(color: AppTheme.borderColor),
                 ),
                 child: InkWell(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(16),
                   onTap: () {
                     // Navigate to item detail screen
                     Navigator.push(
@@ -975,12 +979,12 @@ class _SearchScreenState extends State<SearchScreen>
                           width: 50,
                           height: 50,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF333366).withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
+                            color: AppTheme.lightOrange,
+                            borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Icon(
-                            Icons.inventory_2,
-                            color: Color(0xFF333366),
+                            Icons.inventory_2_outlined,
+                            color: AppTheme.primaryColor,
                             size: 24,
                           ),
                         ),
@@ -992,63 +996,64 @@ class _SearchScreenState extends State<SearchScreen>
                               RichText(
                                 text: TextSpan(
                                   children: spans,
-                                  style: const TextStyle(
+                                  style: GoogleFonts.urbanist(
                                     fontSize: 15,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.black87,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.textPrimary,
                                   ),
                                 ),
                               ),
                               const SizedBox(height: 4),
                               Row(
                                 children: [
-                                  Icon(
+                                  const Icon(
                                     Icons.category_outlined,
                                     size: 12,
-                                    color: Colors.grey[600],
+                                    color: AppTheme.textSecondary,
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
                                     result.categoryName,
-                                    style: TextStyle(
+                                    style: GoogleFonts.urbanist(
                                       fontSize: 12,
-                                      color: Colors.grey[600],
+                                      fontWeight: FontWeight.w500,
+                                      color: AppTheme.textSecondary,
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 2),
+                              const SizedBox(height: 6),
                               Row(
                                 children: [
                                   Container(
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 6, vertical: 2),
+                                        horizontal: 8, vertical: 3),
                                     decoration: BoxDecoration(
                                       color: result.item.quantity > 0
-                                          ? Colors.green.withOpacity(0.1)
-                                          : Colors.red.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(4),
+                                          ? AppTheme.successBackground
+                                          : AppTheme.warningBackground,
+                                      borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: Text(
                                       result.item.quantity > 0
-                                          ? '${LocalizationService.translate('search.inStock')}${result.item.quantity} ${result.item.unit}'
+                                          ? '${LocalizationService.translate('search.inStock')}: ${result.item.quantity} ${result.item.unit}'
                                           : LocalizationService.translate('search.outOfStock'),
-                                      style: TextStyle(
+                                      style: GoogleFonts.urbanist(
                                         fontSize: 11,
                                         color: result.item.quantity > 0
-                                            ? Colors.green[700]
-                                            : Colors.red[700],
-                                        fontWeight: FontWeight.w500,
+                                            ? AppTheme.success
+                                            : AppTheme.warning,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                   ),
                                   const Spacer(),
                                   Text(
                                     '\€${result.item.price.toStringAsFixed(2)}',
-                                    style: const TextStyle(
+                                    style: GoogleFonts.urbanist(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold,
-                                      color: Color(0xFF333366),
+                                      color: AppTheme.primaryColor,
                                     ),
                                   ),
                                 ],

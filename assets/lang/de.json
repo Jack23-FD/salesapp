@@ -171,6 +171,16 @@
     "deletingItem": "Artikel wird gelöscht..."
   },
   "itemDetails": {
+    "title": "Artikeldetails",
+    "inventoryStatus": "Lagerstatus",
+    "inStock": "Auf Lager",
+    "outOfStock": "Nicht auf Lager",
+    "lowStock": "Geringer Bestand",
+    "minLevel": "Mindestbestand",
+    "details": "Artikelinformationen",
+    "id": "Produkt-ID",
+    "createdAt": "Erstellungsdatum",
+    "stockValue": "Lagerwert",
     "itemName": "Artikelname",
     "category": "Kategorie",
     "price": "Preis",

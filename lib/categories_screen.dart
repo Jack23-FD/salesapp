@@ -10,6 +10,8 @@ import 'screens/scanner/scanner_screen.dart';
 import 'screens/notification_screen.dart';
 import 'services/localization_service.dart';
 import 'widgets/notification_icon.dart';
+import 'theme/app_theme.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class CategoriesScreen extends StatefulWidget {
   const CategoriesScreen({super.key});
@@ -154,7 +156,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               ListTile(
                 title: Text(LocalizationService.translate('categoryScreen.allCategory')),
                 trailing: _activeFilter == 'All Category'
-                    ? const Icon(Icons.check_circle, color: Color(0xFF333366))
+                    ? const Icon(Icons.check_circle, color: const Color(0xFFFF8A00))
                     : null,
                 onTap: () {
                   setState(() {
@@ -168,7 +170,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 title: Text(LocalizationService.translate('categoryScreen.activeCategory')),
                 trailing: _activeFilter == 'Active Category' ||
                         _activeFilter == 'Active'
-                    ? const Icon(Icons.check_circle, color: Color(0xFF333366))
+                    ? const Icon(Icons.check_circle, color: const Color(0xFFFF8A00))
                     : null,
                 onTap: () {
                   setState(() {
@@ -181,7 +183,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               ListTile(
                 title: Text(LocalizationService.translate('categoryScreen.lowStockCategory')),
                 trailing: _activeFilter == 'Low Stock Category'
-                    ? const Icon(Icons.check_circle, color: Color(0xFF333366))
+                    ? const Icon(Icons.check_circle, color: const Color(0xFFFF8A00))
                     : null,
                 onTap: () {
                   setState(() {
@@ -194,7 +196,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               ListTile(
                 title: Text(LocalizationService.translate('categoryScreen.emptyCategory')),
                 trailing: _activeFilter == 'Empty Category'
-                    ? const Icon(Icons.check_circle, color: Color(0xFF333366))
+                    ? const Icon(Icons.check_circle, color: const Color(0xFFFF8A00))
                     : null,
                 onTap: () {
                   setState(() {
@@ -207,7 +209,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               ListTile(
                 title: Text(LocalizationService.translate('categoryScreen.inactiveCategory')),
                 trailing: _activeFilter == 'Inactive Category'
-                    ? const Icon(Icons.check_circle, color: Color(0xFF333366))
+                    ? const Icon(Icons.check_circle, color: const Color(0xFFFF8A00))
                     : null,
                 onTap: () {
                   setState(() {
@@ -323,11 +325,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF333366).withOpacity(0.1),
+                        color: const Color(0xFFFFF3E0),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.info_outline,
-                          color: Color(0xFF333366), size: 18),
+                          color: const Color(0xFFFF8A00), size: 18),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -375,7 +377,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF333366),
+                    backgroundColor: const Color(0xFFFF8A00),
                     foregroundColor: Colors.white,
                     minimumSize: const Size(double.infinity, 48),
                     shape: RoundedRectangleBorder(
@@ -425,154 +427,108 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.secondaryBackgroundColor,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header
             Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.05),
-                    spreadRadius: 1,
-                    blurRadius: 1,
-                  ),
-                ],
+              decoration: const BoxDecoration(
+                color: AppTheme.backgroundColor,
+                border: Border(
+                  bottom: BorderSide(color: AppTheme.borderColor, width: 1),
+                ),
               ),
               child: Column(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.only(
-                      left: 16.0,
-                      right: 12.0,
-                      top: 8.0,
-                      bottom: 8.0,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                     child: Row(
                       children: [
                         Text(
                           LocalizationService.translate('categoryScreen.title'),
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF1F1F1F),
+                          style: GoogleFonts.urbanist(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.textPrimary,
                           ),
                         ),
                         const Spacer(),
-                        Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        const ScannerScreen()),
-                              );
-                            },
-                            child: const Icon(
-                              Icons.qr_code_scanner_outlined,
-                              size: 20,
-                              color: Color(0xFF1F1F1F),
-                            ),
-                          ),
+                        NotificationIcon(
+                          useContainerBackground: false,
+                          iconColor: AppTheme.textPrimary,
                         ),
-                        const SizedBox(width: 8),
-                        const NotificationIcon(),
                       ],
                     ),
                   ),
 
                   // Filter Section
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.45,
+                        InkWell(
+                          onTap: _showStatusFilterModal,
+                          borderRadius: BorderRadius.circular(10),
                           child: Container(
-                            decoration: const BoxDecoration(
-                              border: Border(
-                                bottom: BorderSide(
-                                  color: Color(0xFF333366),
-                                  width: 2.0,
-                                ),
-                              ),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryColor,
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                            child: InkWell(
-                              onTap: _showStatusFilterModal,
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 8.0),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Flexible(
-                                      child: Text(
-                                        _getTranslatedFilterName(_activeFilter),
-                                        style: const TextStyle(
-                                          color: Color(0xFF333366),
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    _getTranslatedFilterName(_activeFilter),
+                                    style: GoogleFonts.urbanist(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
                                     ),
-                                    const SizedBox(width: 4),
-                                    const Icon(
-                                      Icons.keyboard_arrow_down,
-                                      color: Color(0xFF333366),
-                                    ),
-                                  ],
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
-                              ),
+                                const SizedBox(width: 4),
+                                const Icon(
+                                  Icons.keyboard_arrow_down,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
+                              ],
                             ),
                           ),
                         ),
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.25,
+                        InkWell(
+                          onTap: _showSortByModal,
+                          borderRadius: BorderRadius.circular(10),
                           child: Container(
-                            decoration: const BoxDecoration(
-                              border: Border(
-                                bottom: BorderSide(
-                                  color: Color(0xFF333366),
-                                  width: 2.0,
-                                ),
-                              ),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryColor,
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                            child: InkWell(
-                              onTap: _showSortByModal,
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 8.0),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      _getTranslatedSortMode(_sortBy),
-                                      style: const TextStyle(
-                                        color: Color(0xFF333366),
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    const Icon(
-                                      Icons.keyboard_arrow_down,
-                                      color: Color(0xFF333366),
-                                    ),
-                                  ],
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  _getTranslatedSortMode(_sortBy),
+                                  style: GoogleFonts.urbanist(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
+                                const SizedBox(width: 4),
+                                const Icon(
+                                  Icons.keyboard_arrow_down,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -595,13 +551,13 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const CircularProgressIndicator(
-                            color: Color(0xFF333366),
+                            color: AppTheme.primaryColor,
                           ),
                           const SizedBox(height: 16),
                           ElevatedButton(
                             onPressed: _loadCategories,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF333366),
+                              backgroundColor: AppTheme.primaryColor,
                               foregroundColor: Colors.white,
                             ),
                             child: Text(LocalizationService.translate('categoryScreen.retryLoading')),
@@ -645,18 +601,12 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                       return categoryItems.isEmpty;
                     }).toList();
                   } else if (_activeFilter == 'Inactive Category') {
-                    // Assuming inactive categories are stored with a property or can be determined
-                    // This is a placeholder - adjust according to your actual inactive category logic
                     filteredCategories = allCategories.where((category) {
-                      // Replace with your inactive category check
                       return false; // Placeholder
                     }).toList();
                   } else if (_activeFilter == 'All Category') {
-                    // No filter needed, use all categories
                     filteredCategories = allCategories;
                   } else if (_activeFilter == 'Active Category' || _activeFilter == 'Active') {
-                    // In 'Active Category' filter, show all categories 
-                    // This ensures categories are shown even if they don't have items yet
                     filteredCategories = allCategories;
                   }
                   
@@ -688,7 +638,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                             LocalizationService.translate(messageKey),
                             style: const TextStyle(
                               fontSize: 16,
-                              color: Colors.grey,
+                              color: AppTheme.textSecondary,
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -703,7 +653,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                               ).then((_) => _loadCategories()); // Reload after adding
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF333366),
+                              backgroundColor: AppTheme.primaryColor,
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 24, vertical: 12),
@@ -741,49 +691,52 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                               onLongPress: () =>
                                   _confirmDeleteCategory(context, category),
                               child: Container(
-                                margin: const EdgeInsets.only(bottom: 8),
+                                margin: const EdgeInsets.only(bottom: 12),
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(8),
+                                  color: AppTheme.cardBackgroundColor,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: AppTheme.borderColor),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.grey.withOpacity(0.1),
-                                      spreadRadius: 1,
-                                      blurRadius: 3,
-                                      offset: const Offset(0, 1),
+                                      color: Colors.black.withOpacity(0.01),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
                                     ),
                                   ],
                                 ),
                                 child: ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                                   leading: Container(
-                                    padding: const EdgeInsets.all(8),
+                                    padding: const EdgeInsets.all(10),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF333366)
-                                          .withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(4),
+                                      color: AppTheme.lightOrange,
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Icon(
                                       category.icon ?? Icons.star_outline,
-                                      color: const Color(0xFF333366),
-                                      size: 20,
+                                      color: AppTheme.primaryColor,
+                                      size: 24,
                                     ),
                                   ),
                                   title: Text(
                                     category.name,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w500,
+                                    style: GoogleFonts.urbanist(
+                                      fontWeight: FontWeight.bold,
+                                      color: AppTheme.textPrimary,
+                                      fontSize: 16,
                                     ),
                                   ),
                                   subtitle: Text(
                                     '$itemCount ${LocalizationService.translate('categoryScreen.items')}',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey[600],
+                                    style: GoogleFonts.urbanist(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      color: AppTheme.textSecondary,
                                     ),
                                   ),
                                   trailing: const Icon(
                                     Icons.chevron_right,
-                                    color: Colors.grey,
+                                    color: AppTheme.textSecondary,
                                   ),
                                 ),
                               ),
@@ -804,8 +757,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                               ),
                             ).then((_) => _loadCategories()); // Reload after adding
                           },
-                          backgroundColor: const Color(0xFF333366),
-                          child: const Icon(Icons.add),
+                          backgroundColor: AppTheme.primaryColor,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          child: const Icon(Icons.add, color: Colors.white),
                         ),
                       ),
                     ],

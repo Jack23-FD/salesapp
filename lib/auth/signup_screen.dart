@@ -191,7 +191,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
     // Simplified layout with fixed constraints
     final size = MediaQuery.of(context).size;
     print("DEBUG: Screen size: ${size.width} x ${size.height}");
-    print("DEBUG: FormKey valid: ${_formKey.currentState?.validate() ?? 'not initialized'}");
     
     return Scaffold(
       backgroundColor: Colors.white,
@@ -229,7 +228,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF333366),
+                            color: const Color(0xFFFF8A00),
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -388,7 +387,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         alignment: Alignment.center,
                                         decoration: BoxDecoration(
                                           color: _selectedRole == UserRole.staff
-                                              ? const Color(0xFF333366)
+                                              ? const Color(0xFFFF8A00)
                                               : Colors.transparent,
                                           borderRadius: BorderRadius.circular(6),
                                         ),
@@ -419,7 +418,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         alignment: Alignment.center,
                                         decoration: BoxDecoration(
                                           color: _selectedRole == UserRole.admin
-                                              ? const Color(0xFF333366)
+                                              ? const Color(0xFFFF8A00)
                                               : Colors.transparent,
                                           borderRadius: BorderRadius.circular(6),
                                         ),
@@ -449,7 +448,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           child: ElevatedButton(
                             onPressed: _isLoading ? null : _signUp,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF333366),
+                              backgroundColor: const Color(0xFFFF8A00),
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
@@ -534,7 +533,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               child: const Text(
                                 'Sign In',
                                 style: TextStyle(
-                                  color: Color(0xFF333366),
+                                  color: const Color(0xFFFF8A00),
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -586,7 +585,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFF333366)),
+          borderSide: const BorderSide(color: const Color(0xFFFF8A00)),
         ),
       ),
       validator: validator,

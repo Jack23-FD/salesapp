@@ -200,13 +200,10 @@ class _SignInScreenState extends State<SignInScreen> {
                         color: Colors.black54,
                       ),
                     ),
-                    const Text(
-                      'LOGO',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        color: Color(0xFF333366),
-                      ),
+                    Image.asset(
+                      'assets/images/logo.png',
+                      height: 36,
+                      fit: BoxFit.contain,
                     ),
                     const SizedBox(width: 20),
                   ],
@@ -223,7 +220,7 @@ class _SignInScreenState extends State<SignInScreen> {
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF333366),
+                        color: const Color(0xFFFF8A00),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -293,7 +290,7 @@ class _SignInScreenState extends State<SignInScreen> {
                               _isPasswordVisible
                                   ? Icons.visibility_off
                                   : Icons.visibility,
-                              color: const Color(0xFF333366),
+                              color: const Color(0xFFFF8A00),
                             ),
                             onPressed: () {
                               setState(() {
@@ -325,7 +322,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                 width: 24,
                                 child: Checkbox(
                                   value: _rememberMe,
-                                  activeColor: const Color(0xFF333366),
+                                  activeColor: const Color(0xFFFF8A00),
                                   shape: RoundedRectangleBorder(
                                     borderRadius:
                                         BorderRadius.circular(4),
@@ -359,7 +356,7 @@ class _SignInScreenState extends State<SignInScreen> {
                               );
                             },
                             style: TextButton.styleFrom(
-                              foregroundColor: const Color(0xFF333366),
+                              foregroundColor: const Color(0xFFFF8A00),
                               padding: EdgeInsets.zero,
                               minimumSize: const Size(0, 0),
                               tapTargetSize:
@@ -482,7 +479,7 @@ class _SignInScreenState extends State<SignInScreen> {
                             child: const Text(
                               'Create account',
                               style: TextStyle(
-                                color: Color(0xFF333366),
+                                color: const Color(0xFFFF8A00),
                                 fontWeight: FontWeight.bold,
                               ),
                             ),

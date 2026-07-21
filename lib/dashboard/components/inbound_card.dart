@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../utils/translation_utils.dart';
 import '../../services/localization_service.dart';
+import '../../theme/app_theme.dart';
 
 class InboundCard extends StatelessWidget {
   final int quantity;
@@ -24,29 +25,31 @@ class InboundCard extends StatelessWidget {
   Widget build(BuildContext context) {
     // Get the current locale to force rebuild when language changes
     final locale = Provider.of<LocalizationProvider>(context).locale;
-    
+
     // Calculate text scaling factor for potentially long translations
     final String addedStock = 'dashboard.addedStock'.translate();
     final String units = 'dashboard.units'.translate();
     final double titleFontSize = _calculateFontSize(addedStock, 16.0);
-    
+
     // Log translation for debugging
-    print("InboundCard: Translating 'dashboard.addedStock' = '$addedStock' (locale: ${locale.languageCode})");
-    
+    print(
+        "InboundCard: Translating 'dashboard.addedStock' = '$addedStock' (locale: ${locale.languageCode})");
+
     return Container(
       width: MediaQuery.of(context).size.width,
       margin: const EdgeInsets.only(bottom: 16.0),
       child: Card(
-        elevation: 2,
+        elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.0),
+          borderRadius: BorderRadius.circular(16.0),
+          side: const BorderSide(color: AppTheme.borderColor),
         ),
         margin: EdgeInsets.zero,
         child: Column(
           children: [
             InkWell(
               onTap: onTap,
-              borderRadius: BorderRadius.circular(12.0),
+              borderRadius: BorderRadius.circular(16.0),
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: ListTile(
@@ -58,8 +61,9 @@ class InboundCard extends StatelessWidget {
                         child: Text(
                           addedStock,
                           style: GoogleFonts.urbanist(
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.bold,
                             fontSize: titleFontSize,
+                            color: AppTheme.textPrimary,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -70,9 +74,10 @@ class InboundCard extends StatelessWidget {
                         child: Text(
                           '$quantity $units',
                           style: GoogleFonts.urbanist(
-                            fontWeight: FontWeight.w500,
-                            fontSize: _calculateFontSize('$quantity $units', 15.0),
-                            color: Colors.grey[700],
+                            fontWeight: FontWeight.bold,
+                            fontSize:
+                                _calculateFontSize('$quantity $units', 15.0),
+                            color: AppTheme.textSecondary,
                           ),
                           textAlign: TextAlign.end,
                           overflow: TextOverflow.ellipsis,
@@ -83,30 +88,30 @@ class InboundCard extends StatelessWidget {
                   leading: Container(
                     width: 40,
                     height: 40,
-                    decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.2),
+                    decoration: const BoxDecoration(
+                      color: AppTheme.primaryColor,
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
-                      Icons.login,
-                      color: Colors.green,
+                      Icons.login_outlined,
+                      color: Colors.white,
                       size: 22,
                     ),
                   ),
                   trailing: Icon(
                     isExpanded ? Icons.expand_less : Icons.expand_more,
-                    color: Colors.grey[700],
+                    color: AppTheme.textSecondary,
                   ),
                 ),
               ),
             ),
             if (isExpanded)
               Container(
-                decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.3),
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(12.0),
-                    bottomRight: Radius.circular(12.0),
+                decoration: const BoxDecoration(
+                  color: AppTheme.successBackground,
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(16.0),
+                    bottomRight: Radius.circular(16.0),
                   ),
                 ),
                 padding: const EdgeInsets.all(16),
@@ -116,20 +121,24 @@ class InboundCard extends StatelessWidget {
                     Text(
                       '${addedStock} (${'dashboard.incomingInventory'.translate()})',
                       style: GoogleFonts.urbanist(
-                        fontWeight: FontWeight.w700,
-                        fontSize: _calculateFontSize('${addedStock} (${'dashboard.incomingInventory'.translate()})', 16.0),
-                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: _calculateFontSize(
+                            '${addedStock} (${'dashboard.incomingInventory'.translate()})',
+                            16.0),
+                        color: AppTheme.textPrimary,
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 2,
                     ),
                     const SizedBox(height: 16),
-                    _buildInfoRow('dashboard.incomingItems'.translate(), '$quantity $units', true),
-                    const SizedBox(height: 6),
-                    _buildInfoRow('dashboard.totalCategories'.translate(), '$categories'),
+                    _buildInfoRow('dashboard.incomingItems'.translate(),
+                        '$quantity $units', true),
                     const SizedBox(height: 6),
                     _buildInfoRow(
-                        'dashboard.totalValue'.translate(), '€${value.toStringAsFixed(2)}'),
+                        'dashboard.totalCategories'.translate(), '$categories'),
+                    const SizedBox(height: 6),
+                    _buildInfoRow('dashboard.totalValue'.translate(),
+                        '€${value.toStringAsFixed(2)}'),
                   ],
                 ),
               ),
@@ -140,16 +149,18 @@ class InboundCard extends StatelessWidget {
   }
 
   Widget _buildInfoRow(String label, String value, [bool highlight = false]) {
-    final double labelFontSize = _calculateFontSize(label, highlight ? 15.0 : 14.0);
-    final double valueFontSize = _calculateFontSize(value, highlight ? 15.0 : 14.0);
-    
+    final double labelFontSize =
+        _calculateFontSize(label, highlight ? 15.0 : 14.0);
+    final double valueFontSize =
+        _calculateFontSize(value, highlight ? 15.0 : 14.0);
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
       decoration: BoxDecoration(
-        color: highlight ? Colors.green.withOpacity(0.1) : null,
-        border: Border(
+        color: highlight ? AppTheme.backgroundColor.withOpacity(0.5) : null,
+        border: const Border(
           bottom: BorderSide(
-            color: Colors.green.withOpacity(0.2),
+            color: AppTheme.borderColor,
             width: 1.0,
           ),
         ),
@@ -163,9 +174,9 @@ class InboundCard extends StatelessWidget {
               label,
               style: GoogleFonts.urbanist(
                 textStyle: TextStyle(
-                  fontWeight: highlight ? FontWeight.w600 : FontWeight.w500,
+                  fontWeight: highlight ? FontWeight.bold : FontWeight.w600,
                   fontSize: labelFontSize,
-                  color: Colors.black,
+                  color: AppTheme.textPrimary,
                 ),
               ),
               overflow: TextOverflow.ellipsis,
@@ -178,9 +189,9 @@ class InboundCard extends StatelessWidget {
               value,
               style: GoogleFonts.urbanist(
                 textStyle: TextStyle(
-                  fontWeight: highlight ? FontWeight.w700 : FontWeight.w600,
+                  fontWeight: highlight ? FontWeight.bold : FontWeight.bold,
                   fontSize: valueFontSize,
-                  color: highlight ? Colors.green[700] : Colors.black,
+                  color: highlight ? AppTheme.success : AppTheme.textPrimary,
                 ),
               ),
               textAlign: TextAlign.end,
@@ -191,14 +202,14 @@ class InboundCard extends StatelessWidget {
       ),
     );
   }
-  
+
   // Helper method to calculate font size based on text length
   double _calculateFontSize(String text, double baseSize) {
     // Keep original font size for English language
     if (LocalizationService.currentLocale.languageCode == 'en') {
       return baseSize;
     }
-    
+
     // Adjust font size for other languages based on text length
     if (text.length <= 15) {
       return baseSize;

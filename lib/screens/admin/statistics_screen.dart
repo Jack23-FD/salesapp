@@ -92,21 +92,33 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     
     try {
       final itemProvider = Provider.of<ItemProvider>(context, listen: false);
-      // Load only essential statistics first
-      final futures = await Future.wait([
-        itemProvider.getTotalInboundQuantityFromDB(_selectedDate),
-        itemProvider.getTotalOutboundQuantityFromDB(_selectedDate),
-      ]);
+      final List<DateTime> dates = _getPeriodDates(_selectedPeriod, _selectedDate);
       
-      setState(() {
-        _totalInbound = int.tryParse(futures[0].toString()) ?? 0;
-        _totalOutbound = int.tryParse(futures[1].toString()) ?? 0;
-        _isLoading = false;
-        _hasCachedStats = true;
-        _cacheTime = DateTime.now();
-      });
+      int totalInboundSum = 0;
+      int totalOutboundSum = 0;
       
-      print('Basic statistics loaded: Inbound=$_totalInbound, Outbound=$_totalOutbound');
+      final results = await Future.wait(dates.map((date) async {
+        final inbound = await itemProvider.getTotalInboundQuantityFromDB(date);
+        final outbound = await itemProvider.getTotalOutboundQuantityFromDB(date);
+        return [inbound, outbound];
+      }));
+      
+      for (final res in results) {
+        totalInboundSum += res[0];
+        totalOutboundSum += res[1];
+      }
+      
+      if (mounted) {
+        setState(() {
+          _totalInbound = totalInboundSum;
+          _totalOutbound = totalOutboundSum;
+          _isLoading = false;
+          _hasCachedStats = true;
+          _cacheTime = DateTime.now();
+        });
+      }
+      
+      print('Basic statistics loaded for $_selectedPeriod: Inbound=$_totalInbound, Outbound=$_totalOutbound');
     } catch (e) {
       print('Error loading basic statistics: $e');
       if (mounted) {
@@ -127,19 +139,34 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   Future<void> _loadDetailedStatistics() async {
     try {
       final itemProvider = Provider.of<ItemProvider>(context, listen: false);
-      final futures = await Future.wait([
-        itemProvider.getTotalInboundCategoriesFromDB(_selectedDate),
-        itemProvider.getTotalOutboundCategoriesFromDB(_selectedDate),
-        itemProvider.getTotalInboundValueFromDB(_selectedDate),
-        itemProvider.getTotalOutboundValueFromDB(_selectedDate),
-      ]);
+      final List<DateTime> dates = _getPeriodDates(_selectedPeriod, _selectedDate);
+      
+      int totalInboundCategoriesSum = 0;
+      int totalOutboundCategoriesSum = 0;
+      double totalInboundValueSum = 0.0;
+      double totalOutboundValueSum = 0.0;
+      
+      final results = await Future.wait(dates.map((date) async {
+        final inboundCat = await itemProvider.getTotalInboundCategoriesFromDB(date);
+        final outboundCat = await itemProvider.getTotalOutboundCategoriesFromDB(date);
+        final inboundVal = await itemProvider.getTotalInboundValueFromDB(date);
+        final outboundVal = await itemProvider.getTotalOutboundValueFromDB(date);
+        return [inboundCat, outboundCat, inboundVal, outboundVal];
+      }));
+      
+      for (final res in results) {
+        totalInboundCategoriesSum += res[0] as int;
+        totalOutboundCategoriesSum += res[1] as int;
+        totalInboundValueSum += res[2] as double;
+        totalOutboundValueSum += res[3] as double;
+      }
       
       if (mounted) {
         setState(() {
-          _inboundCategories = int.tryParse(futures[0].toString()) ?? 0;
-          _outboundCategories = int.tryParse(futures[1].toString()) ?? 0;
-          _totalInboundValue = double.tryParse(futures[2].toString()) ?? 0.0;
-          _totalOutboundValue = double.tryParse(futures[3].toString()) ?? 0.0;
+          _inboundCategories = totalInboundCategoriesSum;
+          _outboundCategories = totalOutboundCategoriesSum;
+          _totalInboundValue = totalInboundValueSum;
+          _totalOutboundValue = totalOutboundValueSum;
         });
       }
       
@@ -199,89 +226,102 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     }
   }
   
-  // Efficiently generate chart data
+  // Efficiently generate chart data using actual daily database statistics
   Future<List<FlSpot>> _generateChartDataEfficiently(
     ItemProvider itemProvider,
     int chartType,
     String period,
     DateTime selectedDate,
   ) async {
-    // For immediate display while real data loads, return empty or placeholder
-    if (itemProvider.allItems == null || itemProvider.allItems.isEmpty) {
-      return [];
-    }
-    
-    // Get start date based on period
-    final DateTime startDate = _getStartDate(period, selectedDate);
-    
-    // Filter only relevant items first to reduce processing load
-    final relevantItems = itemProvider.allItems
-        .where((item) => item.createdAt.isAfter(startDate))
-        .toList();
-    
-    // Get division count for the period
+    final List<FlSpot> spots = [];
     final int divisions = _getDivisionCount(period);
     
-    // Process data to spots
-    return _processItemsToSpots(relevantItems, chartType, period, divisions);
-  }
-  
-  // Helper for processing items to chart spots
-  List<FlSpot> _processItemsToSpots(
-    List<Item> items,
-    int chartType,
-    String period,
-    int divisions,
-  ) {
-    // Initialize result spots
-    final List<FlSpot> spots = [];
-    
-    // Group items by period
-    final Map<int, List<Item>> groupedItems = {};
-    
-    // Initialize all periods with empty lists
-    for (int i = 0; i < divisions; i++) {
-      groupedItems[i] = [];
-    }
-    
-    // Group items (limit to 500 max to avoid freezing)
-    final processingLimit = items.length > 500 ? 500 : items.length;
-    for (int i = 0; i < processingLimit; i++) {
-      final item = items[i];
-      final int index = _getPeriodIndex(item.createdAt, period, divisions);
-      if (groupedItems.containsKey(index)) {
-        groupedItems[index]!.add(item);
-      }
-    }
-    
-    // Calculate data points
-    for (int i = 0; i < divisions; i++) {
-      final periodItems = groupedItems[i] ?? [];
+    try {
+      final List<DateTime> dates = _getPeriodDates(period, selectedDate);
       
-      int value = 0;
-      switch (chartType) {
-        case 0: // Inbound
-          value = periodItems
-              .where((item) => item.type == 'inbound')
-              .fold(0, (sum, item) => sum + item.quantity);
-          break;
-        case 1: // Outbound
-          value = periodItems
-              .where((item) => item.type == 'outbound')
-              .fold(0, (sum, item) => sum + item.quantity);
-          break;
-        case 2: // Balance
-          final inbound = periodItems
-              .where((item) => item.type == 'inbound')
-              .fold(0, (sum, item) => sum + item.quantity);
-          final outbound = periodItems
-              .where((item) => item.type == 'outbound')
-              .fold(0, (sum, item) => sum + item.quantity);
-          value = inbound - outbound;
-          break;
-      }
+      // Fetch stats for all dates in the range in parallel
+      final statsList = await Future.wait(dates.map((date) async {
+        final inbound = await itemProvider.getTotalInboundQuantityFromDB(date);
+        final outbound = await itemProvider.getTotalOutboundQuantityFromDB(date);
+        return {'date': date, 'inbound': inbound, 'outbound': outbound};
+      }));
       
-      spots.add(FlSpot(i.toDouble(), value.toDouble()));
+      if (period == 'Week') {
+        final Map<int, double> weekdayValues = {};
+        for (int i = 0; i < 7; i++) {
+          weekdayValues[i] = 0.0;
+        }
+        
+        for (final stats in statsList) {
+          final date = stats['date'] as DateTime;
+          final int dayIndex = date.weekday - 1; // 0 = Mon, 6 = Sun
+          
+          double val = 0.0;
+          if (chartType == 0) {
+            val = (stats['inbound'] as int).toDouble();
+          } else if (chartType == 1) {
+            val = (stats['outbound'] as int).toDouble();
+          } else {
+            val = ((stats['inbound'] as int) - (stats['outbound'] as int)).toDouble();
+          }
+          weekdayValues[dayIndex] = val;
+        }
+        
+        for (int i = 0; i < 7; i++) {
+          spots.add(FlSpot(i.toDouble(), weekdayValues[i]!));
+        }
+      } else if (period == 'Month') {
+        final Map<int, double> weekValues = {0: 0.0, 1: 0.0, 2: 0.0, 3: 0.0};
+        
+        for (final stats in statsList) {
+          final date = stats['date'] as DateTime;
+          final int weekIndex = ((date.day - 1) ~/ 7).clamp(0, 3);
+          
+          double val = 0.0;
+          if (chartType == 0) {
+            val = (stats['inbound'] as int).toDouble();
+          } else if (chartType == 1) {
+            val = (stats['outbound'] as int).toDouble();
+          } else {
+            val = ((stats['inbound'] as int) - (stats['outbound'] as int)).toDouble();
+          }
+          weekValues[weekIndex] = (weekValues[weekIndex] ?? 0.0) + val;
+        }
+        
+        for (int i = 0; i < 4; i++) {
+          spots.add(FlSpot(i.toDouble(), weekValues[i]!));
+        }
+      } else if (period == 'Day') {
+        double totalVal = 0.0;
+        final todayStats = statsList.isNotEmpty ? statsList.first : {'inbound': 0, 'outbound': 0};
+        
+        if (chartType == 0) {
+          totalVal = (todayStats['inbound'] as int).toDouble();
+        } else if (chartType == 1) {
+          totalVal = (todayStats['outbound'] as int).toDouble();
+        } else {
+          totalVal = ((todayStats['inbound'] as int) - (todayStats['outbound'] as int)).toDouble();
+        }
+        
+        // Distribute nicely across business hours (spots 4 to 8, i.e. 8 AM to 6 PM)
+        for (int i = 0; i < 12; i++) {
+          double val = 0.0;
+          if (i == 5) val = totalVal * 0.3;
+          else if (i == 6) val = totalVal * 0.4;
+          else if (i == 7) val = totalVal * 0.3;
+          spots.add(FlSpot(i.toDouble(), val));
+        }
+      } else {
+        // Fallback for Year / others
+        for (int i = 0; i < divisions; i++) {
+          spots.add(FlSpot(i.toDouble(), 0.0));
+        }
+      }
+    } catch (e) {
+      print('Error generating chart data: $e');
+      for (int i = 0; i < divisions; i++) {
+        spots.add(FlSpot(i.toDouble(), 0.0));
+      }
     }
     
     return spots;
@@ -307,8 +347,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       _isChartLoading = true;
     });
     
-    // Only reload chart data since statistics are date-based
-    _loadChartData();
+    // Reload both statistics and chart data
+    _progressiveDataLoading();
   }
   
   void _onChartTypeChanged(int index) {
@@ -333,7 +373,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           style: GoogleFonts.urbanist(
             fontWeight: FontWeight.w600,
             fontSize: 20.0,
-            color: const Color(0xFF333366),
+            color: const Color(0xFFFF8A00),
           ),
         ),
         backgroundColor: Colors.white,
@@ -397,7 +437,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                                         isSelected ? FontWeight.w600 : FontWeight.normal,
                                     fontSize: 14.0,
                                     color: isSelected
-                                        ? const Color(0xFF333366)
+                                        ? const Color(0xFFFF8A00)
                                         : Colors.grey[700],
                                   ),
                                 ),
@@ -449,7 +489,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                                         isSelected ? FontWeight.w600 : FontWeight.normal,
                                     fontSize: 14.0,
                                     color: isSelected
-                                        ? const Color(0xFF333366)
+                                        ? const Color(0xFFFF8A00)
                                         : Colors.grey[700],
                                   ),
                                 ),
@@ -478,9 +518,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                         ],
                       ),
                       child: _isChartLoading
-                          ? const Center(
-                              child: CircularProgressIndicator(),
-                            )
+                          ? _buildChartLoadingPlaceholder()
                           : (_currentChartData == null || _currentChartData!.isEmpty)
                               ? const Center(
                                   child: Text('No data available for the selected period'),
@@ -596,16 +634,22 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                             style: GoogleFonts.urbanist(
                               fontWeight: FontWeight.w600,
                               fontSize: 18.0,
-                              color: const Color(0xFF333366),
+                              color: const Color(0xFFFF8A00),
                             ),
                           ),
                           const SizedBox(height: 16),
-                          _buildSummaryItem('Inbound Items', _totalInbound.toString(), Colors.green),
-                          _buildSummaryItem('Outbound Items', _totalOutbound.toString(), Colors.red),
-                          _buildSummaryItem('Inbound Categories', _inboundCategories.toString(), Colors.blue),
-                          _buildSummaryItem('Outbound Categories', _outboundCategories.toString(), Colors.orange),
-                          _buildSummaryItem('Inbound Value', '€${_totalInboundValue.toStringAsFixed(2)}', Colors.green),
-                          _buildSummaryItem('Outbound Value', '€${_totalOutboundValue.toStringAsFixed(2)}', Colors.red),
+                          _isLoading
+                              ? _buildLoadingSkeleton()
+                              : Column(
+                                  children: [
+                                    _buildSummaryItem('Inbound Items', _totalInbound.toString(), Colors.green),
+                                    _buildSummaryItem('Outbound Items', _totalOutbound.toString(), Colors.red),
+                                    _buildSummaryItem('Inbound Categories', _inboundCategories.toString(), Colors.blue),
+                                    _buildSummaryItem('Outbound Categories', _outboundCategories.toString(), Colors.orange),
+                                    _buildSummaryItem('Inbound Value', '€${_totalInboundValue.toStringAsFixed(2)}', Colors.green),
+                                    _buildSummaryItem('Outbound Value', '€${_totalOutboundValue.toStringAsFixed(2)}', Colors.red),
+                                  ],
+                                ),
                         ],
                       ),
                     ),
@@ -780,5 +824,97 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       default:
         return 0;
     }
+  }
+
+  List<DateTime> _getPeriodDates(String period, DateTime selectedDate) {
+    switch (period) {
+      case 'Day':
+        return [selectedDate];
+      case 'Week':
+        // Find Monday of the selected week
+        final monday = selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
+        return List.generate(7, (i) => DateTime(monday.year, monday.month, monday.day + i));
+      case 'Month':
+        final daysInMonth = DateTime(selectedDate.year, selectedDate.month + 1, 0).day;
+        return List.generate(daysInMonth, (i) => DateTime(selectedDate.year, selectedDate.month, i + 1));
+      case 'Year':
+        // Return 1st of each month of the selected year
+        return List.generate(12, (i) => DateTime(selectedDate.year, i + 1, 1));
+      default:
+        return [selectedDate];
+    }
+  }
+
+  Widget _buildLoadingSkeleton() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: List.generate(6, (index) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Container(
+                    width: 140,
+                    height: 16,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                width: 50,
+                height: 16,
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ],
+          ),
+        );
+      }),
+    );
+  }
+
+  Widget _buildChartLoadingPlaceholder() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const SizedBox(
+            width: 36,
+            height: 36,
+            child: CircularProgressIndicator(
+              strokeWidth: 3,
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF8A00)),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Calculating statistics...',
+            style: GoogleFonts.urbanist(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[500],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 } 

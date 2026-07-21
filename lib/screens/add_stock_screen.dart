@@ -60,7 +60,7 @@ class _AddStockScreenState extends State<AddStockScreen> {
   ];
 
   // Define app theme colors
-  final Color primaryColor = const Color(0xFF333366);
+  final Color primaryColor = const Color(0xFFFF8A00);
   final Color secondaryColor = const Color(0xFF6466B3);
   final Color lightGray = const Color(0xFFF5F5F7);
   final Color borderColor = const Color(0xFFE0E0E0);

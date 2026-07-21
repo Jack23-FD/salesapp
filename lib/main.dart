@@ -25,6 +25,7 @@ import 'screens/notification_screen.dart';
 import 'screens/auth_check_screen.dart';
 import 'screens/add_stock_screen.dart';
 import 'screens/use_stock_screen.dart';
+import 'screens/splash_screen.dart';
 import 'theme/app_theme.dart';
 import 'utils/font_loader.dart' as app_fonts;
 import 'theme/typography.dart';
@@ -285,30 +286,7 @@ class _MyAppState extends State<MyApp> {
                 }
                 return supportedLocales.first;
               },
-              home: authProvider.isLoading
-                  ? const LoadingScreen(message: "Loading application data...")
-                  : (authProvider.error != null && authProvider.error!.contains("permission-denied")) 
-                      ? ErrorScreen(
-                          title: "Firebase Permission Error",
-                          message: "There is an issue with Firebase permissions. Please check your configuration or try again later.",
-                          retryAction: () => _retryInitialization(context),
-                        )
-                      : FutureBuilder<Widget>(
-                          future: _getStartScreen(context, authProvider),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState == ConnectionState.waiting) {
-                              return const LoadingScreen(message: "Checking application state...");
-                            } else if (snapshot.hasError) {
-                              return ErrorScreen(
-                                title: "Application Error",
-                                message: "There was an error starting the application: ${snapshot.error}",
-                                retryAction: () => _retryInitialization(context),
-                              );
-                            } else {
-                              return snapshot.data!;
-                            }
-                          },
-                        ),
+              home: const SplashScreen(),
               routes: {
                 '/signin': (context) => const SignInScreen(),
                 '/signup': (context) => SignUpScreen(selectedLanguage: 'en'),
@@ -393,7 +371,7 @@ class ErrorScreen extends StatelessWidget {
               ElevatedButton(
                 onPressed: retryAction,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF333366),
+                  backgroundColor: const Color(0xFFFF8A00),
                 ),
                 child: const Text('Retry'),
               ),

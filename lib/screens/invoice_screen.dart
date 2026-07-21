@@ -127,7 +127,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: const BoxDecoration(
-                    color: Color(0xFF333366),
+                    color: const Color(0xFFFF8A00),
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(16),
                       topRight: Radius.circular(16),
@@ -202,7 +202,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                       const SizedBox(width: 8),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF333366),
+                          backgroundColor: const Color(0xFFFF8A00),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
@@ -290,7 +290,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
           style: GoogleFonts.urbanist(
             fontWeight: FontWeight.w600,
             fontSize: 20.0,
-            color: const Color(0xFF333366),
+            color: const Color(0xFFFF8A00),
           ),
         ),
         backgroundColor: Colors.white,
@@ -325,7 +325,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                             style: GoogleFonts.urbanist(
                               fontWeight: FontWeight.w700,
                               fontSize: 18.0,
-                              color: const Color(0xFF333366),
+                              color: const Color(0xFFFF8A00),
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -398,7 +398,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                                   style: GoogleFonts.urbanist(
                                     fontWeight: FontWeight.w700,
                                     fontSize: 16.0,
-                                    color: const Color(0xFF333366),
+                                    color: const Color(0xFFFF8A00),
                                   ),
                                 ),
                               ],
@@ -427,7 +427,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                             style: GoogleFonts.urbanist(
                               fontWeight: FontWeight.w700,
                               fontSize: 18.0,
-                              color: const Color(0xFF333366),
+                              color: const Color(0xFFFF8A00),
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -520,7 +520,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                             style: GoogleFonts.urbanist(
                               fontWeight: FontWeight.w700,
                               fontSize: 18.0,
-                              color: const Color(0xFF333366),
+                              color: const Color(0xFFFF8A00),
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -580,7 +580,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                     child: ElevatedButton(
                       onPressed: _generateInvoice,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF333366),
+                        backgroundColor: const Color(0xFFFF8A00),
                         foregroundColor: Colors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(

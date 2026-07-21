@@ -387,90 +387,48 @@ class _BottomNavigationState extends State<BottomNavigation>
     
     print("BottomNavigation: building with _isReady = $_isReady, language = $_currentLanguage");
     
-    return SizedBox(
-      height: totalHeight,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(24),
-            topRight: Radius.circular(24),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.15),
-              blurRadius: 15,
-              offset: const Offset(0, -3),
-            ),
-          ],
-        ),
-        padding: EdgeInsets.only(
-          bottom: bottomPadding,
-        ),
-        child: BottomNavigationBar(
-          currentIndex: widget.currentIndex,
-          onTap: (index) {
-            print("BottomNavigation: tab tapped at index $index, isReady=$_isReady");
-            // Add haptic feedback
-            HapticFeedback.selectionClick();
+    return NavigationBar(
+      selectedIndex: widget.currentIndex,
+      onDestinationSelected: (index) {
+        print("BottomNavigation: tab tapped at index $index, isReady=$_isReady");
+        HapticFeedback.selectionClick();
 
-            if (index == 1) {
-              // Stock tab
-              _showBoundingOptions(context);
-            } else {
-              // Handle navigation for other tabs
-              widget.pageController.jumpToPage(index);
-              widget.onTabChanged(index);
-              _controller.reset();
-              _controller.forward();
-            }
-          },
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          selectedItemColor: Theme.of(context).primaryColor,
-          unselectedItemColor: Colors.grey,
-          showUnselectedLabels: true,
-          selectedFontSize: 11.0,
-          unselectedFontSize: 10.0,
-          selectedLabelStyle: AppTypography.smallButton.copyWith(
-            fontSize: 11.0,
-            height: 1.0,
-            fontWeight: FontWeight.w600,
-          ),
-          unselectedLabelStyle: AppTypography.smallButton.copyWith(
-            fontSize: 10.0,
-            height: 1.0,
-          ),
-          items: [
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.dashboard_outlined),
-              activeIcon: const Icon(Icons.dashboard),
-              label: 'navigation.dashboard'.tr,
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.compare_arrows),
-              activeIcon: const Icon(Icons.compare_arrows),
-              label: 'navigation.stock'.tr,
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.search),
-              activeIcon: const Icon(Icons.search),
-              label: 'navigation.search'.tr,
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.category_outlined),
-              activeIcon: const Icon(Icons.category),
-              label: 'navigation.categories'.tr,
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.menu),
-              activeIcon: const Icon(Icons.menu),
-              label: 'navigation.menu'.tr,
-            ),
-          ],
+        if (index == 1) {
+          _showBoundingOptions(context);
+        } else {
+          widget.pageController.jumpToPage(index);
+          widget.onTabChanged(index);
+          _controller.reset();
+          _controller.forward();
+        }
+      },
+      destinations: [
+        NavigationDestination(
+          icon: const Icon(Icons.dashboard_outlined),
+          selectedIcon: const Icon(Icons.dashboard),
+          label: 'navigation.dashboard'.tr,
         ),
-      ),
+        NavigationDestination(
+          icon: const Icon(Icons.compare_arrows),
+          selectedIcon: const Icon(Icons.compare_arrows),
+          label: 'navigation.stock'.tr,
+        ),
+        NavigationDestination(
+          icon: const Icon(Icons.search),
+          selectedIcon: const Icon(Icons.search),
+          label: 'navigation.search'.tr,
+        ),
+        NavigationDestination(
+          icon: const Icon(Icons.category_outlined),
+          selectedIcon: const Icon(Icons.category),
+          label: 'navigation.categories'.tr,
+        ),
+        NavigationDestination(
+          icon: const Icon(Icons.menu),
+          selectedIcon: const Icon(Icons.menu),
+          label: 'navigation.menu'.tr,
+        ),
+      ],
     );
   }
 }

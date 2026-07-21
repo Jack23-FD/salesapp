@@ -114,7 +114,7 @@ class _NewCategoryScreenState extends State<NewCategoryScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Color(0xFF333366)),
+                    borderSide: const BorderSide(color: const Color(0xFFFF8A00)),
                   ),
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -156,7 +156,7 @@ class _NewCategoryScreenState extends State<NewCategoryScreen> {
                       decoration: BoxDecoration(
                         border: Border.all(
                           color: selectedIconIndex == index
-                              ? const Color(0xFF333366)
+                              ? const Color(0xFFFF8A00)
                               : Colors.grey.shade300,
                           width: 1,
                         ),
@@ -165,7 +165,7 @@ class _NewCategoryScreenState extends State<NewCategoryScreen> {
                       child: Icon(
                         categoryIcons[index],
                         color: selectedIconIndex == index
-                            ? const Color(0xFF333366)
+                            ? const Color(0xFFFF8A00)
                             : Colors.grey.shade600,
                       ),
                     ),
@@ -197,7 +197,7 @@ class _NewCategoryScreenState extends State<NewCategoryScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Color(0xFF333366)),
+                    borderSide: const BorderSide(color: const Color(0xFFFF8A00)),
                   ),
                   contentPadding: const EdgeInsets.all(16),
                 ),
@@ -208,7 +208,7 @@ class _NewCategoryScreenState extends State<NewCategoryScreen> {
                 child: ElevatedButton(
                   onPressed: _saveCategory,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF333366),
+                    backgroundColor: const Color(0xFFFF8A00),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(

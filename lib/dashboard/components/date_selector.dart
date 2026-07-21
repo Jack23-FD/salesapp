@@ -215,13 +215,13 @@ class _DateSelectorState extends State<DateSelector>
                       Container(
                         width: 40,
                         height: 40,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF333366).withOpacity(0.1),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFFF8A00),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
                           Icons.calendar_today,
-                          color: Color(0xFF333366),
+                          color: Colors.white,
                           size: 20,
                         ),
                       ),
@@ -245,7 +245,7 @@ class _DateSelectorState extends State<DateSelector>
                               style: GoogleFonts.urbanist(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 16.0,
-                                color: const Color(0xFF333366),
+                                color: Colors.black87,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -260,7 +260,7 @@ class _DateSelectorState extends State<DateSelector>
                   turns: _rotationAnimation,
                   child: const Icon(
                     Icons.keyboard_arrow_down,
-                    color: Color(0xFF333366),
+                    color: const Color(0xFFFF8A00),
                   ),
                 ),
               ],
