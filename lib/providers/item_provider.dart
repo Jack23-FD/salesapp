@@ -76,7 +76,9 @@ class ItemProvider extends ChangeNotifier {
       debugPrint('Error loading items from PHP API: $e');
       _error = e.toString();
       _isLoading = false;
-      _hasInitiallyLoaded = true; 
+      if (!e.toString().contains('not authenticated')) {
+        _hasInitiallyLoaded = true;
+      }
       notifyListeners();
       
       // Fallback: Populate mock items when offline

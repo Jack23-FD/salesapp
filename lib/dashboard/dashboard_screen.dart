@@ -78,12 +78,15 @@ class _DashboardScreenState extends State<DashboardScreen> with AutomaticKeepAli
     try {
       debugPrint("Dashboard: Starting data load");
       final itemProvider = Provider.of<ItemProvider>(context, listen: false);
+      final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
+      
+      // Reload categories and items from database
+      await categoryProvider.reloadFromDatabase();
+      await itemProvider.reloadFromDatabase();
       
       // Load data from cache first for immediate display
       await _loadCachedStatistics();
       
-      // Then load from database for updated data
-      await itemProvider.reloadFromLocalStorage();
       if (mounted) {
         await _loadStatistics();
         _initialLoadComplete = true;

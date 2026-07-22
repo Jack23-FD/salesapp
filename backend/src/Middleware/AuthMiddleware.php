@@ -36,7 +36,7 @@ class AuthMiddleware {
         $stmt->execute(['id' => $firebaseUser['uid']]);
         $user = $stmt->fetch();
 
-        // If user doesn't exist in local database, but token is valid, they are allowed to proceed to signup/registration routes only
+        // If user doesn't exist in local database, but token is valid, auto-provision user
         if (!$user) {
             $requestUri = $_SERVER['REQUEST_URI'] ?? '';
             if (strpos($requestUri, 'api/v1/auth/register') !== false) {
@@ -48,8 +48,30 @@ class AuthMiddleware {
                     "is_registered" => false
                 ];
             }
-            
-            Response::unauthorized("Access Denied: Firebase user is not registered in the database. Please complete registration first.");
+
+            try {
+                $companyId = bin2hex(random_bytes(16));
+                $companyName = 'My Company';
+                
+                $db->prepare("INSERT INTO companies (id, name, status) VALUES (:id, :name, 'active')")
+                   ->execute(['id' => $companyId, 'name' => $companyName]);
+                
+                $userName = !empty($firebaseUser['name']) ? $firebaseUser['name'] : (explode('@', $firebaseUser['email'] ?? 'User')[0]);
+                $db->prepare("INSERT INTO users (id, company_id, name, email, role, status) VALUES (:id, :company_id, :name, :email, 'admin', 'active')")
+                   ->execute([
+                       'id' => $firebaseUser['uid'],
+                       'company_id' => $companyId,
+                       'name' => $userName,
+                       'email' => $firebaseUser['email'] ?? '',
+                   ]);
+
+                // Re-query newly created user
+                $stmt->execute(['id' => $firebaseUser['uid']]);
+                $user = $stmt->fetch();
+            } catch (\Exception $e) {
+                error_log("Auto-provisioning failed: " . $e->getMessage());
+                Response::unauthorized("Access Denied: Firebase user is not registered in the database. Please complete registration first.");
+            }
         }
 
         if ($user['status'] !== 'active') {

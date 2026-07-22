@@ -68,7 +68,9 @@ class CategoryProvider extends ChangeNotifier {
     } catch (e) {
       print('Error loading categories from PHP API: $e');
       _isLoading = false;
-      _hasInitialLoad = true; // Mark as loaded even on error to prevent infinite loading
+      if (!e.toString().contains('not authenticated')) {
+        _hasInitialLoad = true;
+      }
       notifyListeners();
       // Fallback to local storage if API fails
       _loadCategoriesFromStorage();

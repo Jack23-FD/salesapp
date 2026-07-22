@@ -109,6 +109,44 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       print("AuthProvider: Error loading user data from PHP API: $e");
+      
+      // Auto-register user on PHP backend if Firebase user is authenticated but missing from database
+      if (e.toString().contains('not registered in the database') && _firebaseUser != null) {
+        try {
+          print("AuthProvider: User not registered on PHP backend. Auto-registering...");
+          final name = (_firebaseUser!.displayName != null && _firebaseUser!.displayName!.isNotEmpty) 
+              ? _firebaseUser!.displayName! 
+              : (_firebaseUser!.email?.split('@').first ?? 'User');
+          final companyName = 'My Company';
+          await _apiService.registerUser(name, companyName, 'admin', _firebaseUser!.phoneNumber);
+          print("AuthProvider: Auto-registration completed. Re-loading profile...");
+          final profileMap = await _apiService.getProfile();
+          
+          final roleStr = profileMap['role'] ?? 'admin';
+          final role = roleStr == 'admin' ? UserRole.admin : UserRole.staff;
+
+          _user = User(
+            id: profileMap['id'] ?? '',
+            email: profileMap['email'] ?? '',
+            name: profileMap['name'] ?? '',
+            companyName: profileMap['companyName'] ?? profileMap['company_name'] ?? '',
+            phoneNumber: profileMap['phoneNumber'] ?? profileMap['phone_number'] ?? '',
+            role: role,
+            createdAt: DateTime.tryParse(profileMap['createdAt'] ?? profileMap['created_at'] ?? '') ?? DateTime.now(),
+            lastLogin: DateTime.now(),
+            authProvider: 'email',
+          );
+
+          print("AuthProvider: User profile loaded successfully after auto-registration");
+          await StorageUtils.cacheStringValue('user_role', roleStr);
+          await StorageUtils.migrateToUserSpecificData();
+          notifyListeners();
+          return;
+        } catch (autoRegError) {
+          print("AuthProvider: Auto-registration failed: $autoRegError");
+        }
+      }
+
       _error = e.toString();
       notifyListeners();
       
