@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\DTOs\TransactionDTO;
 use App\Repositories\TransactionRepository;
 use App\Repositories\ProductRepository;
 use App\Config\TransactionManager;
@@ -27,55 +28,52 @@ class TransactionService {
             Response::badRequest("Missing required transaction fields (productId, quantity, type).");
         }
 
-        $productId = $data['productId'];
-        $qty = intval($data['quantity']);
-        $type = strtolower($data['type']);
+        $dto = TransactionDTO::fromArray($data, $userContext['company_id'], $userContext['uid']);
 
-        if ($qty <= 0) {
+        if ($dto->quantity <= 0) {
             Response::badRequest("Transaction quantity must be greater than zero.");
         }
 
-        if ($type !== 'inbound' && $type !== 'outbound') {
+        if ($dto->type !== 'inbound' && $dto->type !== 'outbound') {
             Response::badRequest("Invalid transaction type. Must be 'inbound' or 'outbound'.");
         }
 
         // Verify product exists and belongs to company
-        $product = $this->productRepo->findById($productId, $userContext['company_id']);
+        $product = $this->productRepo->findById($dto->productId, $userContext['company_id']);
         if (!$product) {
             Response::notFound("Product not found.");
         }
 
         // Business Rule: For outbound transactions, verify sufficient stock level exists
-        if ($type === 'outbound' && $product['quantity'] < $qty) {
-            Response::badRequest("Insufficient stock level. Available: {$product['quantity']}, Requested: {$qty}");
+        if ($dto->type === 'outbound' && $product['quantity'] < $dto->quantity) {
+            Response::badRequest("Insufficient stock level. Available: {$product['quantity']}, Requested: {$dto->quantity}");
         }
 
         $id = bin2hex(random_bytes(16)); // UUID for transaction log
-        $dateStr = $data['date'] ?? date('Y-m-d H:i:s');
 
         try {
-            return $this->txManager->transaction(function() use ($id, $userContext, $productId, $qty, $type, $dateStr, $product) {
+            return $this->txManager->transaction(function() use ($id, $userContext, $dto, $product) {
                 // 1. Create transaction log record
                 $this->transactionRepo->create([
                     'id' => $id,
                     'company_id' => $userContext['company_id'],
-                    'product_id' => $productId,
-                    'quantity' => $qty,
-                    'type' => $type,
-                    'date' => $dateStr,
+                    'product_id' => $dto->productId,
+                    'quantity' => $dto->quantity,
+                    'type' => $dto->type,
+                    'date' => $dto->createdAt,
                     'created_by' => $userContext['uid']
                 ]);
 
                 // 2. Adjust product inventory quantity
-                $newQty = ($type === 'inbound') ? ($product['quantity'] + $qty) : ($product['quantity'] - $qty);
-                $this->productRepo->update($productId, $userContext['company_id'], [
+                $newQty = ($dto->type === 'inbound') ? ($product['quantity'] + $dto->quantity) : ($product['quantity'] - $dto->quantity);
+                $this->productRepo->update($dto->productId, $userContext['company_id'], [
                     'quantity' => $newQty,
                     'updated_by' => $userContext['uid']
                 ]);
 
                 return [
                     'id' => $id,
-                    'productId' => $productId,
+                    'productId' => $dto->productId,
                     'newQuantity' => $newQty
                 ];
             });

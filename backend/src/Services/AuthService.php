@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\DTOs\UserDTO;
 use App\Repositories\CompanyRepository;
 use App\Repositories\UserRepository;
 use App\Config\TransactionManager;
@@ -23,66 +24,66 @@ class AuthService {
      * Register a new user (admin or staff)
      */
     public function registerUser(array $data): array {
-        // Validate input data
         if (empty($data['uid']) || empty($data['name']) || empty($data['email']) || empty($data['companyName'])) {
             Response::badRequest("Missing required registration fields.");
         }
 
-        $role = $data['role'] ?? 'admin';
-        if ($role !== 'admin' && $role !== 'staff') {
+        $dto = UserDTO::fromArray($data);
+
+        if ($dto->role !== 'admin' && $dto->role !== 'staff') {
             Response::badRequest("Invalid registration role.");
         }
 
         try {
-            if ($role === 'staff') {
+            if ($dto->role === 'staff') {
                 // Look up company by name
-                $company = $this->companyRepo->findByName($data['companyName']);
+                $company = $this->companyRepo->findByName($dto->companyName);
                 if (!$company) {
-                    Response::badRequest("Company '{$data['companyName']}' does not exist. Please contact your administrator.");
+                    Response::badRequest("Company '{$dto->companyName}' does not exist. Please contact your administrator.");
                 }
                 
                 $companyId = $company['id'];
                 
                 // Create user record with staff role
                 $this->userRepo->create([
-                    'id' => $data['uid'],
+                    'id' => $dto->uid,
                     'company_id' => $companyId,
-                    'name' => $data['name'],
-                    'email' => $data['email'],
-                    'phone_number' => $data['phoneNumber'] ?? null,
+                    'name' => $dto->name,
+                    'email' => $dto->email,
+                    'phone_number' => $dto->phoneNumber,
                     'role' => 'staff',
                     'status' => 'active'
                 ]);
 
                 return [
-                    'uid' => $data['uid'],
+                    'uid' => $dto->uid,
                     'company_id' => $companyId,
                     'role' => 'staff'
                 ];
             } else {
                 $companyId = bin2hex(random_bytes(16)); // Generate secure company UUID
                 
-                return $this->txManager->transaction(function() use ($companyId, $data) {
+                return $this->txManager->transaction(function() use ($companyId, $dto) {
                     // 1. Create company record
                     $this->companyRepo->create([
                         'id' => $companyId,
-                        'name' => $data['companyName'],
+                        'name' => $dto->companyName,
                         'status' => 'active'
                     ]);
 
                     // 2. Create user record with admin role
                     $this->userRepo->create([
-                        'id' => $data['uid'],
+                        'id' => $dto->uid,
                         'company_id' => $companyId,
-                        'name' => $data['name'],
-                        'email' => $data['email'],
-                        'phone_number' => $data['phoneNumber'] ?? null,
+                        'name' => $dto->name,
+                        'email' => $dto->email,
+                        'phone_number' => $dto->phoneNumber,
                         'role' => 'admin',
                         'status' => 'active'
                     ]);
 
                     return [
-                        'uid' => $data['uid'],
+                        'uid' => $dto->uid,
                         'company_id' => $companyId,
                         'role' => 'admin'
                     ];
@@ -113,19 +114,21 @@ class AuthService {
             Response::badRequest("Missing required staff registration fields.");
         }
 
+        $dto = UserDTO::fromArray($data, $adminUser['company_id']);
+
         try {
             $this->userRepo->create([
-                'id' => $data['uid'],
+                'id' => $dto->uid,
                 'company_id' => $adminUser['company_id'],
-                'name' => $data['name'],
-                'email' => $data['email'],
-                'phone_number' => $data['phoneNumber'] ?? null,
+                'name' => $dto->name,
+                'email' => $dto->email,
+                'phone_number' => $dto->phoneNumber,
                 'role' => 'staff',
                 'status' => 'active'
             ]);
 
             return [
-                'uid' => $data['uid'],
+                'uid' => $dto->uid,
                 'company_id' => $adminUser['company_id'],
                 'role' => 'staff'
             ];

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\DTOs\ProductDTO;
 use App\Repositories\ProductRepository;
 use App\Utils\Response;
 use Exception;
@@ -26,9 +27,11 @@ class ProductService
             Response::badRequest("Missing required product fields (name, categoryId, price).");
         }
 
+        $dto = ProductDTO::fromArray($data, $userContext['company_id'], $userContext['uid']);
+
         // Validate barcode uniqueness
-        if (!empty($data['barcode'])) {
-            $existingProduct = $this->productRepo->findByBarcode($userContext['company_id'], $data['barcode']);
+        if (!empty($dto->barcode)) {
+            $existingProduct = $this->productRepo->findByBarcode($userContext['company_id'], $dto->barcode);
             if ($existingProduct) {
                 Response::badRequest("A product with this barcode already exists.");
             }
@@ -37,20 +40,7 @@ class ProductService
         $id = bin2hex(random_bytes(16));
 
         try {
-            $insertData = [
-                'id' => $id,
-                'company_id' => $userContext['company_id'],
-                'category_id' => $data['categoryId'],
-                'name' => $data['name'],
-                'quantity' => intval($data['quantity'] ?? 0),
-                'unit' => $data['unit'] ?? 'pcs',
-                'price' => floatval($data['price']),
-                'barcode' => $data['barcode'] ?? null,
-                'min_level' => isset($data['minLevel']) ? floatval($data['minLevel']) : null,
-                'image_url' => $data['imageUrl'] ?? null,
-                'created_by' => $userContext['uid'],
-                'status' => 'active'
-            ];
+            $insertData = array_merge($dto->toDatabaseArray(), ['id' => $id]);
 
             $this->productRepo->create($insertData);
 
@@ -71,7 +61,7 @@ class ProductService
                 ]);
             }
 
-            return ['id' => $id, 'name' => $data['name']];
+            return ['id' => $id, 'name' => $dto->name];
         } catch (Exception $e) {
             error_log("Failed to create product: " . $e->getMessage());
             Response::error("Failed to create product.", 500);
@@ -89,9 +79,11 @@ class ProductService
             Response::notFound("Product not found.");
         }
 
+        $dto = ProductDTO::fromArray(array_merge(['id' => $id], $data), $userContext['company_id'], $userContext['uid']);
+
         // Validate barcode uniqueness
-        if (!empty($data['barcode'])) {
-            $existingProduct = $this->productRepo->findByBarcode($userContext['company_id'], $data['barcode']);
+        if (!empty($dto->barcode)) {
+            $existingProduct = $this->productRepo->findByBarcode($userContext['company_id'], $dto->barcode);
             if ($existingProduct && $existingProduct['id'] !== $id) {
                 Response::badRequest("A product with this barcode already exists.");
             }
@@ -99,14 +91,14 @@ class ProductService
 
         try {
             $updateData = [
-                'category_id' => $data['categoryId'],
-                'name' => $data['name'],
-                'quantity' => intval($data['quantity'] ?? 0),
-                'unit' => $data['unit'] ?? 'pcs',
-                'price' => floatval($data['price']),
-                'barcode' => $data['barcode'] ?? null,
-                'min_level' => isset($data['minLevel']) ? floatval($data['minLevel']) : null,
-                'image_url' => $data['imageUrl'] ?? null,
+                'category_id' => $dto->categoryId,
+                'name' => $dto->name,
+                'quantity' => $dto->quantity,
+                'unit' => $dto->unit,
+                'price' => $dto->price,
+                'barcode' => $dto->barcode,
+                'min_level' => $dto->minLevel,
+                'image_url' => $dto->imageUrl,
                 'updated_by' => $userContext['uid']
             ];
 

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\DTOs\CategoryDTO;
 use App\Repositories\CategoryRepository;
 use App\Utils\Response;
 use Exception;
@@ -22,23 +23,14 @@ class CategoryService {
             Response::badRequest("Category name is required.");
         }
 
-        $id = bin2hex(random_bytes(16)); // Generate UUID
+        $dto = CategoryDTO::fromArray($data, $userContext['company_id'], $userContext['uid']);
+        $id = bin2hex(random_bytes(16));
 
         try {
-            $insertData = [
-                'id' => $id,
-                'company_id' => $userContext['company_id'],
-                'name' => $data['name'],
-                'description' => $data['description'] ?? null,
-                'icon_code_point' => $data['iconCodePoint'] ?? null,
-                'icon_font_family' => $data['iconFontFamily'] ?? null,
-                'icon_font_package' => $data['iconFontPackage'] ?? null,
-                'created_by' => $userContext['uid'],
-                'status' => 'active'
-            ];
+            $insertData = array_merge($dto->toDatabaseArray(), ['id' => $id]);
 
             $this->categoryRepo->create($insertData);
-            return ['id' => $id, 'name' => $data['name']];
+            return ['id' => $id, 'name' => $dto->name];
         } catch (Exception $e) {
             error_log("Failed to create category: " . $e->getMessage());
             Response::error("Failed to create category.", 500);
@@ -50,19 +42,20 @@ class CategoryService {
             Response::badRequest("Category name is required.");
         }
 
-        // Verify category exists and belongs to company
         $existing = $this->categoryRepo->findById($id, $userContext['company_id']);
         if (!$existing) {
             Response::notFound("Category not found.");
         }
 
+        $dto = CategoryDTO::fromArray(array_merge(['id' => $id], $data), $userContext['company_id'], $userContext['uid']);
+
         try {
             $updateData = [
-                'name' => $data['name'],
-                'description' => $data['description'] ?? null,
-                'icon_code_point' => $data['iconCodePoint'] ?? null,
-                'icon_font_family' => $data['iconFontFamily'] ?? null,
-                'icon_font_package' => $data['iconFontPackage'] ?? null,
+                'name' => $dto->name,
+                'description' => $dto->description,
+                'icon_code_point' => $dto->iconCodePoint,
+                'icon_font_family' => $dto->iconFontFamily,
+                'icon_font_package' => $dto->iconFontPackage,
                 'updated_by' => $userContext['uid']
             ];
 
