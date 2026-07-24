@@ -7,7 +7,8 @@ import '../providers/item_provider.dart';
 import '../services/localization_service.dart';
 import '../language_selection.dart';
 import '../widgets/translatable_text.dart';
-import '../utils/translation_utils.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../theme/app_theme.dart';
 import '../widgets/notification_icon.dart';
 import 'dart:async';
 
@@ -40,155 +41,271 @@ class MenuScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // Header with title
+            // Top Header: Profile / Staff Profile & Notification Bell
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
               child: Row(
                 children: [
-                  TranslatableText(
-                    'menu.myAccount',
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Profile',
+                        style: GoogleFonts.urbanist(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Staff Profile',
+                        style: GoogleFonts.urbanist(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: AppTheme.textSecondary,
+                        ),
+                      ),
+                    ],
                   ),
                   const Spacer(),
                   const NotificationIcon(
-                    iconColor: const Color(0xFFFF8A00),
+                    iconColor: AppTheme.textPrimary,
                     useContainerBackground: false,
                   ),
                 ],
               ),
             ),
 
-            // Profile card
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                padding: const EdgeInsets.all(20),
-                child: Row(
-                  children: [
-                    // User avatar with gradient background
-                    Container(
-                      width: 70,
-                      height: 70,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFFF8A00), Color(0xFFFFC04C)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                children: [
+                  // Main Staff Profile Card (Mockup Image 2)
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: AppTheme.borderColor),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 15,
+                          offset: const Offset(0, 4),
                         ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Center(
-                        child: Text(
-                          user != null && user.name != null
-                              ? user.name.substring(0, 1).toUpperCase()
-                              : 'U',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 30,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
+                      ],
                     ),
-                    const SizedBox(width: 20),
-                    // User info
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            user != null && user.name != null
-                                ? user.name
-                                : 'User Name',
-                            style: theme.textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        // Avatar and Header Info
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Avatar with Camera Edit Badge
+                            Stack(
+                              children: [
+                                CircleAvatar(
+                                  radius: 42,
+                                  backgroundColor: AppTheme.lightBlue,
+                                  backgroundImage: (user?.profilePictureUrl != null && user!.profilePictureUrl!.isNotEmpty)
+                                      ? NetworkImage(user.profilePictureUrl!) as ImageProvider
+                                      : null,
+                                  child: (user?.profilePictureUrl == null || user!.profilePictureUrl!.isEmpty)
+                                      ? Text(
+                                          user != null && user.name.isNotEmpty
+                                              ? user.name.substring(0, 1).toUpperCase()
+                                              : 'J',
+                                          style: GoogleFonts.urbanist(
+                                            color: AppTheme.primaryColor,
+                                            fontSize: 34,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        )
+                                      : null,
+                                ),
+                                Positioned(
+                                  bottom: 0,
+                                  right: 0,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => const ProfileScreen(initialEditMode: true),
+                                        ),
+                                      );
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.all(6),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(color: AppTheme.borderColor, width: 1.5),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.1),
+                                            blurRadius: 4,
+                                          ),
+                                        ],
+                                      ),
+                                      child: const Icon(
+                                        Icons.camera_alt_outlined,
+                                        size: 16,
+                                        color: AppTheme.textPrimary,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            user?.email ?? 'sample123@gmail.com',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: Colors.grey[600],
+                            const SizedBox(width: 16),
+
+                            // Name, Role Badge, and Details List
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    user?.name ?? 'Jawahar D',
+                                    style: GoogleFonts.urbanist(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppTheme.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+
+                                  // Signature Light Blue Role Badge Pill
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.lightBlue,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      user?.displayRoleTitle ?? 'Sales Executive',
+                                      style: GoogleFonts.urbanist(
+                                        color: AppTheme.primaryColor,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+
+                                  // Staff ID
+                                  _buildDetailRow(Icons.badge_outlined, 'Staff ID', ': ${user?.displayStaffId ?? "STF-00024"}'),
+                                  const SizedBox(height: 6),
+
+                                  // Branch
+                                  _buildDetailRow(Icons.account_balance_outlined, 'Branch', ': ${user?.displayBranch ?? "Chennai Main Branch"}'),
+                                  const SizedBox(height: 6),
+
+                                  // Phone
+                                  _buildDetailRow(Icons.phone_outlined, 'Phone', ': ${user?.displayPhone ?? "+91 98765 43210"}'),
+                                  const SizedBox(height: 6),
+
+                                  // Email
+                                  _buildDetailRow(Icons.mail_outline, 'Email', ': ${user?.email ?? "jawahar@gmail.com"}'),
+                                ],
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          OutlinedButton.icon(
+                          ],
+                        ),
+
+                        const SizedBox(height: 18),
+
+                        // Edit Profile Button
+                        SizedBox(
+                          width: double.infinity,
+                          height: 44,
+                          child: OutlinedButton.icon(
                             onPressed: () {
-                              // TODO: Navigate to profile edit screen
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const ProfileScreen(initialEditMode: true),
+                                ),
+                              );
                             },
-                            icon: const Icon(Icons.edit, size: 16),
-                            label: TranslatableText(
-                              'menu.editProfile',
-                              style: const TextStyle(
-                                color: const Color(0xFFFF8A00),
+                            icon: const Icon(Icons.edit_outlined, size: 18, color: AppTheme.primaryColor),
+                            label: Text(
+                              'Edit Profile',
+                              style: GoogleFonts.urbanist(
+                                color: AppTheme.primaryColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
                               ),
                             ),
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFFFF8A00),
-                              side: const BorderSide(color: const Color(0xFFFF8A00)),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 4),
+                              side: const BorderSide(color: AppTheme.primaryColor, width: 1.2),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(12),
                               ),
                             ),
                           ),
-                        ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // ACCOUNT Section Header
+                  const Padding(
+                    padding: EdgeInsets.only(left: 4, bottom: 8),
+                    child: Text(
+                      'ACCOUNT',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey,
+                        letterSpacing: 0.8,
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
+                  ),
 
-            // Menu sections
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                children: [
-                  // Account section
-                  _buildSectionHeader(context, 'menu.sections.account'),
                   _buildMenuCard(
                     context,
                     children: [
-                      _buildMenuItem(
+                      _buildMenuItemWithSubtitle(
                         context,
                         icon: Icons.person_outline,
-                        title: 'menu.userProfile',
+                        title: 'Personal Information',
+                        subtitle: 'View and update your personal details',
                         onTap: () {
-                          // TODO: Navigate to user profile screen
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ProfileScreen(initialEditMode: false),
+                            ),
+                          );
                         },
                       ),
                       _buildDivider(),
-                      _buildMenuItem(
+                      _buildMenuItemWithSubtitle(
+                        context,
+                        icon: Icons.lock_outline,
+                        title: 'Change Password',
+                        subtitle: 'Update your account password',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ProfileScreen(initialEditMode: true),
+                            ),
+                          );
+                        },
+                      ),
+                      _buildDivider(),
+                      _buildMenuItemWithSubtitle(
                         context,
                         icon: Icons.business_outlined,
-                        title: 'menu.companyDetails',
+                        title: 'Company Information',
+                        subtitle: 'View company and branch details',
                         onTap: () {
-                          // TODO: Navigate to company details screen
-                        },
-                      ),
-                      _buildDivider(),
-                      _buildMenuItem(
-                        context,
-                        icon: Icons.admin_panel_settings_outlined,
-                        title: 'menu.adminLogin',
-                        onTap: () {
-                          // TODO: Navigate to admin login screen
+                          _showCompanyDetailsDialog(context, user);
                         },
                       ),
                     ],
@@ -196,62 +313,48 @@ class MenuScreen extends StatelessWidget {
 
                   const SizedBox(height: 24),
 
-                  // Preferences section
-                  _buildSectionHeader(context, 'menu.sections.preferences'),
+                  // PREFERENCES Section Header
+                  const Padding(
+                    padding: EdgeInsets.only(left: 4, bottom: 8),
+                    child: Text(
+                      'PREFERENCES',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                  ),
+
                   _buildMenuCard(
                     context,
                     children: [
-                      _buildMenuItem(
+                      _buildMenuItemWithSubtitle(
                         context,
                         icon: Icons.language_outlined,
-                        title: 'menu.changeLanguage',
+                        title: 'Language',
+                        subtitle: 'Change app language',
                         onTap: () async {
                           final selectedLanguage = await Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  const LanguageSelectionScreen(
-                                isFromMenu: true,
-                              ),
+                              builder: (context) => const LanguageSelectionScreen(isFromMenu: true),
                             ),
                           );
-
                           if (selectedLanguage != null && context.mounted) {
-                            // Force UI refresh by updating the provider
                             final provider = Provider.of<LocalizationProvider>(context, listen: false);
-                            
-                            // Get locale from the selected language
                             final selectedLocale = _getLocaleFromLanguageName(selectedLanguage);
-                            
-                            // Apply the change again to ensure it takes effect
                             await provider.changeLanguage(selectedLocale);
-                            
-                            // Show success message
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              AppTranslations.getTranslatedSnackBar(
-                                'menu.languageChanged',
-                              ),
-                            );
-                            
-                            // Instead of replacing just this screen, pop to the main navigation
-                            // controller and let it refresh with the new language
-                            if (context.mounted) {
-                              // Find the original navigation controller
-                              final navKey = ItemProvider.navigatorKey;
-                              if (navKey.currentState != null && navKey.currentContext != null) {
-                                // Force rebuild of entire app by updating main provider
-                                Provider.of<LocalizationProvider>(navKey.currentContext!, listen: false)
-                                    .notifyListeners();
-                              }
-                            }
                           }
                         },
                       ),
                       _buildDivider(),
-                      _buildMenuItem(
+                      _buildMenuItemWithSubtitle(
                         context,
                         icon: Icons.help_outline,
-                        title: 'menu.helpSupport',
+                        title: 'Help & Support',
+                        subtitle: 'Get help and contact us',
                         onTap: () {
                           Navigator.pushNamed(context, '/walkthrough');
                         },
@@ -261,27 +364,31 @@ class MenuScreen extends StatelessWidget {
 
                   const SizedBox(height: 24),
 
-                  // Sign out button
-                  Container(
-                    margin: const EdgeInsets.only(bottom: 24),
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        _showSignOutDialog(context);
-                      },
-                      icon: const Icon(Icons.logout),
-                      label: TranslatableText('auth.signOut'),
-                      style: ElevatedButton.styleFrom(
+                  // Sign Out Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _showSignOutDialog(context),
+                      icon: const Icon(Icons.logout, color: Colors.red),
+                      label: const Text(
+                        'Sign Out',
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
                         backgroundColor: Colors.white,
-                        foregroundColor: Colors.red[700],
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        side: BorderSide(color: Colors.red.shade200, width: 1.2),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        elevation: 0,
-                        side: BorderSide(color: Colors.red[100]!),
                       ),
                     ),
                   ),
+                  const SizedBox(height: 30),
                 ],
               ),
             ),
@@ -291,30 +398,46 @@ class MenuScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, String titleKey) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 8, bottom: 8),
-      child: TranslatableText(
-        titleKey,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: Colors.grey[700],
-          letterSpacing: 0.5,
+  Widget _buildDetailRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, size: 15, color: AppTheme.textSecondary),
+        const SizedBox(width: 8),
+        SizedBox(
+          width: 65,
+          child: Text(
+            label,
+            style: GoogleFonts.urbanist(
+              fontSize: 12,
+              color: AppTheme.textSecondary,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ),
-      ),
+        Expanded(
+          child: Text(
+            value,
+            style: GoogleFonts.urbanist(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.textPrimary,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildMenuCard(BuildContext context,
-      {required List<Widget> children}) {
+  Widget _buildMenuCard(BuildContext context, {required List<Widget> children}) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.borderColor),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity(0.04),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -326,12 +449,12 @@ class MenuScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuItem(
+  Widget _buildMenuItemWithSubtitle(
     BuildContext context, {
     required IconData icon,
     required String title,
+    required String subtitle,
     required VoidCallback onTap,
-    Widget? trailing,
   }) {
     return InkWell(
       onTap: onTap,
@@ -341,32 +464,46 @@ class MenuScreen extends StatelessWidget {
         child: Row(
           children: [
             Container(
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFF3E0),
-                borderRadius: BorderRadius.circular(8),
+                color: AppTheme.lightBlue,
+                borderRadius: BorderRadius.circular(12),
               ),
-              padding: const EdgeInsets.all(8),
               child: Icon(
                 icon,
-                color: const Color(0xFFFF8A00),
-                size: 20,
+                color: AppTheme.primaryColor,
+                size: 22,
               ),
             ),
-            const SizedBox(width: 16),
-            TranslatableText(
-              title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.urbanist(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.urbanist(
+                      fontSize: 12,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                ],
               ),
             ),
-            const Spacer(),
-            trailing ??
-                const Icon(
-                  Icons.arrow_forward_ios,
-                  color: Colors.grey,
-                  size: 16,
-                ),
+            const Icon(
+              Icons.chevron_right,
+              color: AppTheme.textSecondary,
+              size: 20,
+            ),
           ],
         ),
       ),
@@ -446,6 +583,44 @@ class MenuScreen extends StatelessWidget {
               foregroundColor: Colors.red,
             ),
             child: TranslatableText('auth.signOut'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showCompanyDetailsDialog(BuildContext context, user) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.business, color: Color(0xFF00BBF9)),
+            SizedBox(width: 10),
+            Text('Company Details'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Company Name:', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+            Text(user?.companyName?.isNotEmpty == true ? user!.companyName! : 'Default Company',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 12),
+            Text('Registered Email:', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+            Text(user?.email ?? 'N/A', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+            const SizedBox(height: 12),
+            Text('User Role:', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+            Text(user?.isAdmin == true ? 'Administrator' : 'Staff Member',
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: Color(0xFF00BBF9))),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Close', style: TextStyle(color: Color(0xFF00BBF9))),
           ),
         ],
       ),

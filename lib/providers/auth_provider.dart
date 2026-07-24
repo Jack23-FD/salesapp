@@ -23,6 +23,7 @@ class AuthProvider extends ChangeNotifier {
   bool get isAuthenticated => _firebaseUser != null;
   bool get isFirebaseInitialized => _isFirebaseInitialized;
   bool get isAdmin => _user?.isAdmin ?? false;
+  bool get isEmailVerified => _firebaseUser?.emailVerified ?? false;
   
   // For backward compatibility
   Map<String, dynamic>? get userData {
@@ -258,6 +259,155 @@ class AuthProvider extends ChangeNotifier {
     } catch (e) {
       print("AuthProvider: Error getting staff list: $e");
       return [];
+    }
+  }
+
+  // Update staff member details (Admin)
+  Future<bool> updateStaffUser(User updatedUser) async {
+    try {
+      await _apiService.updateUserProfile(
+        updatedUser.id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        phone: updatedUser.phoneNumber,
+        role: describeEnum(updatedUser.role),
+      );
+      if (_user != null && _user!.id == updatedUser.id) {
+        _user = updatedUser;
+        notifyListeners();
+      }
+      return true;
+    } catch (e) {
+      print("AuthProvider: Error updating staff user: $e");
+      return true;
+    }
+  }
+
+  // Update User Profile
+  Future<bool> updateProfile({
+    String? name,
+    String? username,
+    String? bio,
+    String? profilePictureUrl,
+    String? address,
+  }) async {
+    if (_user == null) return false;
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final updatedUser = _user!.copyWith(
+        name: name ?? _user!.name,
+        username: username ?? _user!.username,
+        bio: bio ?? _user!.bio,
+        profilePictureUrl: profilePictureUrl != null 
+            ? (profilePictureUrl.isEmpty ? null : profilePictureUrl)
+            : _user!.profilePictureUrl,
+        address: address ?? _user!.address,
+      );
+
+      // Update in Firebase/Firestore
+      await _authService.updateUserData(updatedUser);
+
+      if (name != null && name.isNotEmpty && _firebaseUser != null) {
+        await _firebaseUser!.updateDisplayName(name);
+      }
+
+      _user = updatedUser;
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      print("AuthProvider: Error updating profile: $e");
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  // Change Password
+  Future<bool> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    if (_firebaseUser == null || _firebaseUser!.email == null) return false;
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      // Re-authenticate user
+      final credential = firebase_auth.EmailAuthProvider.credential(
+        email: _firebaseUser!.email!,
+        password: oldPassword,
+      );
+
+      await _firebaseUser!.reauthenticateWithCredential(credential);
+      await _firebaseUser!.updatePassword(newPassword);
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      print("AuthProvider: Error changing password: $e");
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  // Send Email Verification
+  Future<bool> sendEmailVerification() async {
+    if (_firebaseUser == null) return false;
+    try {
+      await _firebaseUser!.sendEmailVerification();
+      return true;
+    } catch (e) {
+      print("AuthProvider: Error sending email verification: $e");
+      _error = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  // Reset Password
+  Future<bool> resetPassword(String email) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      await _authService.resetPassword(email);
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      print("AuthProvider: Error resetting password: $e");
+      final errStr = e.toString().toLowerCase();
+      if (errStr.contains('user-not-found')) {
+        _error = 'No user account found matching this email address.';
+      } else if (errStr.contains('invalid-email')) {
+        _error = 'The email address format is invalid.';
+      } else if (errStr.contains('too-many-requests')) {
+        _error = 'Too many password reset requests. Please wait a few minutes and try again.';
+      } else {
+        _error = e.toString().replaceAll('Exception: ', '').replaceAll('FirebaseAuthException: ', '');
+      }
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  // Reload user state (e.g., to update email verification status)
+  Future<void> reloadUser() async {
+    if (_firebaseUser != null) {
+      await _firebaseUser!.reload();
+      _firebaseUser = firebase_auth.FirebaseAuth.instance.currentUser;
+      notifyListeners();
     }
   }
 

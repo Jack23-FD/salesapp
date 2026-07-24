@@ -9,6 +9,7 @@ import '../../services/rbac_service.dart';
 import '../../services/mysql_database_service.dart';
 import 'staff_management.dart';
 import 'statistics_screen.dart';
+import 'company_settings_screen.dart';
 import '../../theme/app_theme.dart';
 import 'dart:async';
 
@@ -270,9 +271,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     icon: Icons.settings_outlined,
                     color: Colors.purple,
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('System Settings - Coming Soon'),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const CompanySettingsScreen(),
                         ),
                       );
                     },

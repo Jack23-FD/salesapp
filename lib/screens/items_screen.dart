@@ -206,7 +206,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
               ListTile(
                 title: const Text('All Items'),
                 trailing: _activeFilter == 'All Items'
-                    ? const Icon(Icons.check_circle, color: const Color(0xFFFF8A00))
+                    ? const Icon(Icons.check_circle, color: const Color(0xFF00BBF9))
                     : null,
                 onTap: () {
                   setState(() {
@@ -220,7 +220,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
                 title: const Text('Active Items'),
                 trailing: _activeFilter == 'Active Items' ||
                         _activeFilter == 'Active'
-                    ? const Icon(Icons.check_circle, color: const Color(0xFFFF8A00))
+                    ? const Icon(Icons.check_circle, color: const Color(0xFF00BBF9))
                     : null,
                 onTap: () {
                   setState(() {
@@ -233,7 +233,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
               ListTile(
                 title: const Text('Low Stock Items'),
                 trailing: _activeFilter == 'Low Stock Items'
-                    ? const Icon(Icons.check_circle, color: const Color(0xFFFF8A00))
+                    ? const Icon(Icons.check_circle, color: const Color(0xFF00BBF9))
                     : null,
                 onTap: () {
                   setState(() {
@@ -556,6 +556,11 @@ class _ItemsScreenState extends State<ItemsScreen> {
                           width: 120,
                           height: 120,
                           fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) => const Icon(
+                            Icons.inventory_2_outlined,
+                            size: 80,
+                            color: AppTheme.primaryColor,
+                          ),
                         ),
                         const SizedBox(height: 16),
                         const Text(

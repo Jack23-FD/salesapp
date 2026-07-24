@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import '../models/item.dart';
 import '../models/outbound_models.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ReceiptPrinter {
   static String _generateReceiptNumber() {
@@ -14,11 +14,15 @@ class ReceiptPrinter {
 
   static Future<void> printReceipt(OutboundTransaction transaction) async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final companyName = prefs.getString('company_name') ?? 'Supermarket POS';
+      final companyBranch = prefs.getString('company_branch') ?? 'Chennai Main Branch';
+      final companyPhone = prefs.getString('company_phone') ?? '+91 98765 43210';
+
       final pdf = pw.Document();
       final dateFormat = DateFormat('dd/MM/yyyy HH:mm');
 
-      // Format currency with Euro symbol
-      String formatPrice(double price) => '${price.toStringAsFixed(2)} €';
+      String formatPrice(double price) => '${price.toStringAsFixed(2)}';
 
       pdf.addPage(
         pw.Page(
@@ -42,19 +46,19 @@ class ReceiptPrinter {
                 // Store Info
                 pw.Center(
                   child: pw.Text(
-                    'Your Store Name',
-                    style: pw.TextStyle(fontSize: 12),
+                    companyName,
+                    style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold),
                   ),
                 ),
                 pw.Center(
                   child: pw.Text(
-                    'Store Address',
+                    companyBranch,
                     style: pw.TextStyle(fontSize: 10),
                   ),
                 ),
                 pw.Center(
                   child: pw.Text(
-                    'Phone: +1234567890',
+                    'Phone: $companyPhone',
                     style: pw.TextStyle(fontSize: 10),
                   ),
                 ),
@@ -141,12 +145,16 @@ class ReceiptPrinter {
 
   static Future<void> printMultipleItemsReceipt(List<OutboundTransaction> transactions) async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final companyName = prefs.getString('company_name') ?? 'Supermarket POS';
+      final companyBranch = prefs.getString('company_branch') ?? 'Chennai Main Branch';
+      final companyPhone = prefs.getString('company_phone') ?? '+91 98765 43210';
+
       final pdf = pw.Document();
       final dateFormat = DateFormat('dd/MM/yyyy HH:mm');
       final total = transactions.fold(0.0, (sum, t) => sum + (t.item.price * t.quantity));
 
-      // Format currency with Euro symbol
-      String formatPrice(double price) => '${price.toStringAsFixed(2)} €';
+      String formatPrice(double price) => '${price.toStringAsFixed(2)}';
 
       pdf.addPage(
         pw.Page(
@@ -170,19 +178,19 @@ class ReceiptPrinter {
                 // Store Info
                 pw.Center(
                   child: pw.Text(
-                    'Your Store Name',
-                    style: pw.TextStyle(fontSize: 12),
+                    companyName,
+                    style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold),
                   ),
                 ),
                 pw.Center(
                   child: pw.Text(
-                    'Store Address',
+                    companyBranch,
                     style: pw.TextStyle(fontSize: 10),
                   ),
                 ),
                 pw.Center(
                   child: pw.Text(
-                    'Phone: +1234567890',
+                    'Phone: $companyPhone',
                     style: pw.TextStyle(fontSize: 10),
                   ),
                 ),
@@ -281,4 +289,4 @@ class ReceiptPrinter {
       rethrow;
     }
   }
-} 
+}

@@ -192,7 +192,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                               _isDropdownOpen
                                   ? Icons.keyboard_arrow_up
                                   : Icons.keyboard_arrow_down,
-                              color: const Color(0xFFFF8A00),
+                              color: const Color(0xFF00BBF9),
                             ),
                           ],
                         ),
@@ -243,7 +243,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                                             horizontal: 16, vertical: 12),
                                         decoration: BoxDecoration(
                                           color: _selectedLanguage == language['name']
-                                              ? const Color(0xFFFF8A00)
+                                              ? const Color(0xFF00BBF9)
                                                   .withOpacity(0.1)
                                               : Colors.transparent,
                                           border: Border(
@@ -265,7 +265,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                                             if (_selectedLanguage == language['name'])
                                               const Icon(
                                                 Icons.check_circle,
-                                                color: const Color(0xFFFF8A00),
+                                                color: const Color(0xFF00BBF9),
                                                 size: 20,
                                               ),
                                           ],
@@ -288,7 +288,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                   child: ElevatedButton(
                     onPressed: _saveLanguagePreference,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF8A00),
+                      backgroundColor: const Color(0xFF00BBF9),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(

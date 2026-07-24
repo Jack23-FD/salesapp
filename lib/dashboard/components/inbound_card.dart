@@ -89,12 +89,12 @@ class InboundCard extends StatelessWidget {
                     width: 40,
                     height: 40,
                     decoration: const BoxDecoration(
-                      color: AppTheme.primaryColor,
+                      color: Color(0xFFE0F2FE),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
                       Icons.login_outlined,
-                      color: Colors.white,
+                      color: Color(0xFF00BBF9),
                       size: 22,
                     ),
                   ),

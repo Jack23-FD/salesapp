@@ -41,7 +41,7 @@ class NotificationScreen extends StatelessWidget {
                   child: const Text(
                     'Mark all read',
                     style: TextStyle(
-                      color: const Color(0xFFFF8A00),
+                      color: const Color(0xFF00BBF9),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -98,7 +98,7 @@ class NotificationScreen extends StatelessWidget {
                     width: 120,
                     height: 120,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFF8A00),
+                      color: const Color(0xFF00BBF9),
                       borderRadius: BorderRadius.circular(60),
                     ),
                     child: Stack(
@@ -139,7 +139,7 @@ class NotificationScreen extends StatelessWidget {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFF8A00),
+                      color: const Color(0xFF00BBF9),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -206,12 +206,12 @@ class NotificationItemWidget extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFF3E0),
+                color: const Color(0xFFE0F2FE),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(
                 Icons.notifications_outlined,
-                color: const Color(0xFFFF8A00),
+                color: const Color(0xFF00BBF9),
                 size: 20,
               ),
             ),
@@ -255,7 +255,7 @@ class NotificationItemWidget extends StatelessWidget {
                 width: 8,
                 height: 8,
                 decoration: const BoxDecoration(
-                  color: const Color(0xFFFF8A00),
+                  color: const Color(0xFF00BBF9),
                   shape: BoxShape.circle,
                 ),
               ),

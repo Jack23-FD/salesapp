@@ -73,20 +73,12 @@ class _AuthCheckScreenState extends State<AuthCheckScreen> {
       
       if (user != null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (user.isAdmin) {
-            // Admin user, redirect to admin dashboard
-            print('User is an admin, redirecting to admin dashboard');
-            Navigator.of(context).pushReplacementNamed('/admin_dashboard');
-          } else {
-            // Regular staff user, redirect to main navigation
-            print('User is staff, redirecting to main navigation');
-            Navigator.of(context).pushReplacementNamed('/main_navigation');
-          }
+          RoleBasedNavigation.navigateToHomeScreen(context, user);
         });
       } else {
         // User is authenticated but user object not loaded yet
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          Navigator.of(context).pushReplacementNamed('/main_navigation');
+          Navigator.of(context).pushReplacementNamed('/dashboard');
         });
       }
       

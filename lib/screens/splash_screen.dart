@@ -157,7 +157,7 @@ class _SplashScreenState extends State<SplashScreen>
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
-                            // Glowing Outer Flame Ring
+                            // Glowing Outer Supermarket Aura Ring
                             Container(
                               width: glowSize,
                               height: glowSize,
@@ -165,13 +165,13 @@ class _SplashScreenState extends State<SplashScreen>
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFFFF8A00)
+                                    color: const Color(0xFF00B259)
                                         .withOpacity(0.5 + (pulse * 0.2)),
                                     blurRadius: 40,
                                     spreadRadius: 15,
                                   ),
                                   BoxShadow(
-                                    color: const Color(0xFFFF3D00)
+                                    color: const Color(0xFF00BBF9)
                                         .withOpacity(0.3 + (pulse * 0.15)),
                                     blurRadius: 60,
                                     spreadRadius: 25,
@@ -180,16 +180,16 @@ class _SplashScreenState extends State<SplashScreen>
                               ),
                             ),
 
-                            // White Glowing Container for Logo
+                            // White Glowing Container for Supermarket Icon / Logo
                             Container(
-                              width: 110,
-                              height: 110,
+                              width: 115,
+                              height: 115,
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(28),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFFFF8A00)
+                                    color: const Color(0xFF00B259)
                                         .withOpacity(0.6),
                                     blurRadius: 25,
                                     offset: const Offset(0, 8),
@@ -211,28 +211,38 @@ class _SplashScreenState extends State<SplashScreen>
 
                 const SizedBox(height: 36),
 
-                // App Title Text
+                // App Title Text - Supermarket POS
                 FadeTransition(
                   opacity: _logoOpacityAnimation,
                   child: Column(
                     children: [
                       Text(
-                        'SALES APP',
+                        'SUPERMARKET POS',
                         style: GoogleFonts.urbanist(
-                          fontSize: 28,
+                          fontSize: 26,
                           fontWeight: FontWeight.w900,
                           color: Colors.white,
-                          letterSpacing: 3.0,
+                          letterSpacing: 2.5,
                         ),
                       ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Fast • Secure • Inventory & Sales',
-                        style: GoogleFonts.urbanist(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFFFF8A00),
-                          letterSpacing: 1.2,
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF00B259).withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: const Color(0xFF00B259).withOpacity(0.4),
+                          ),
+                        ),
+                        child: Text(
+                          'Fresh Produce • Quick Checkout • Smart Inventory',
+                          style: GoogleFonts.urbanist(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF00B259),
+                            letterSpacing: 0.8,
+                          ),
                         ),
                       ),
                     ],
@@ -261,7 +271,7 @@ class _SplashScreenState extends State<SplashScreen>
                               decoration: BoxDecoration(
                                 gradient: const LinearGradient(
                                   colors: [
-                                    Color(0xFFFF8A00),
+                                    Color(0xFF00BBF9),
                                     Color(0xFFFF3D00),
                                     Color(0xFFFFD600),
                                   ],
@@ -269,7 +279,7 @@ class _SplashScreenState extends State<SplashScreen>
                                 borderRadius: BorderRadius.circular(2),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFFFF8A00)
+                                    color: const Color(0xFF00BBF9)
                                         .withOpacity(0.8),
                                     blurRadius: 8,
                                   ),
@@ -315,7 +325,7 @@ class FireGlowPainter extends CustomPainter {
     final firePaint = Paint()
       ..shader = RadialGradient(
         colors: [
-          const Color(0xFFFF8A00).withOpacity(0.22),
+          const Color(0xFF00BBF9).withOpacity(0.22),
           const Color(0xFFFF3D00).withOpacity(0.10),
           Colors.transparent,
         ],
@@ -337,7 +347,7 @@ class FireGlowPainter extends CustomPainter {
 
       final sparkPaint = Paint()
         ..color = Color.lerp(
-          const Color(0xFFFF8A00),
+          const Color(0xFF00BBF9),
           const Color(0xFFFFD600),
           math.Random().nextDouble(),
         )!

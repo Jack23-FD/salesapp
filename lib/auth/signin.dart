@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'auth_widgets.dart';
 import 'signup_screen.dart';
@@ -32,6 +33,39 @@ class _SignInScreenState extends State<SignInScreen> {
     super.initState();
     print("DEBUG: SignInScreen initState called");
     _debugImports();
+    _loadSavedCredentials();
+  }
+
+  Future<void> _loadSavedCredentials() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final rememberMe = prefs.getBool('remember_me') ?? false;
+      final savedEmail = prefs.getString('saved_email') ?? '';
+
+      if (rememberMe && savedEmail.isNotEmpty) {
+        setState(() {
+          _rememberMe = true;
+          _emailController.text = savedEmail;
+        });
+      }
+    } catch (e) {
+      print("Error loading saved credentials: $e");
+    }
+  }
+
+  Future<void> _handleRememberMeState() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (_rememberMe) {
+        await prefs.setBool('remember_me', true);
+        await prefs.setString('saved_email', _emailController.text.trim());
+      } else {
+        await prefs.setBool('remember_me', false);
+        await prefs.remove('saved_email');
+      }
+    } catch (e) {
+      print("Error saving credentials: $e");
+    }
   }
 
   final _formKey = GlobalKey<FormState>();
@@ -70,6 +104,8 @@ class _SignInScreenState extends State<SignInScreen> {
           });
 
           if (success) {
+            await _handleRememberMeState();
+            
             // Get the user model for role check
             final user = authProvider.user;
             
@@ -147,6 +183,135 @@ class _SignInScreenState extends State<SignInScreen> {
     }
   }
 
+  void _showForgotPasswordDialog() {
+    final resetEmailController = TextEditingController(text: _emailController.text.trim());
+    final resetFormKey = GlobalKey<FormState>();
+    bool isResetting = false;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: const Row(
+                children: [
+                  Icon(Icons.lock_reset, color: Color(0xFF00BBF9)),
+                  SizedBox(width: 10),
+                  Text('Forgot Password?'),
+                ],
+              ),
+              content: Form(
+                key: resetFormKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Enter your registered email address and we will send you a password reset link.',
+                      style: TextStyle(fontSize: 13, color: Colors.black87),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: resetEmailController,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: AuthStyles.inputDecoration(
+                        labelText: 'Email Address',
+                        hintText: 'Enter your email',
+                        prefixIcon: Icons.email_outlined,
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter your email';
+                        }
+                        final emailPattern = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                        if (!emailPattern.hasMatch(value.trim())) {
+                          return 'Please enter a valid email address';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isResetting ? null : () => Navigator.pop(dialogContext),
+                  child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF00BBF9),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  onPressed: isResetting
+                      ? null
+                      : () async {
+                          if (resetFormKey.currentState!.validate()) {
+                            setDialogState(() => isResetting = true);
+                            final targetEmail = resetEmailController.text.trim();
+                            final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                            bool success = await authProvider.resetPassword(targetEmail);
+
+                            if (dialogContext.mounted) {
+                              Navigator.pop(dialogContext);
+                            }
+
+                            if (mounted) {
+                              if (success) {
+                                showDialog(
+                                  context: context,
+                                  builder: (ctx) => AlertDialog(
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                    title: const Row(
+                                      children: [
+                                        Icon(Icons.mark_email_read, color: Color(0xFF00B259)),
+                                        SizedBox(width: 10),
+                                        Text('Check Your Email'),
+                                      ],
+                                    ),
+                                    content: Text(
+                                      'A password reset link has been sent to:\n$targetEmail\n\n'
+                                      '📌 Note: If you do not see the email in your Inbox within 2 minutes, please check your SPAM / JUNK folder.',
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(ctx),
+                                        child: const Text('OK', style: TextStyle(color: Color(0xFF00B259), fontWeight: FontWeight.bold)),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(authProvider.error ?? 'Failed to send password reset email.'),
+                                    backgroundColor: Colors.red,
+                                    duration: const Duration(seconds: 4),
+                                  ),
+                                );
+                              }
+                            }
+                          }
+                        },
+                  child: isResetting
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        )
+                      : const Text('Send Reset Link', style: TextStyle(color: Colors.white)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   void _signInWithApple() {
     // Show a snackbar indicating Apple sign-in is not implemented yet
     ScaffoldMessenger.of(context).showSnackBar(
@@ -220,7 +385,7 @@ class _SignInScreenState extends State<SignInScreen> {
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFFFF8A00),
+                        color: const Color(0xFF00BBF9),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -290,7 +455,7 @@ class _SignInScreenState extends State<SignInScreen> {
                               _isPasswordVisible
                                   ? Icons.visibility_off
                                   : Icons.visibility,
-                              color: const Color(0xFFFF8A00),
+                              color: const Color(0xFF00BBF9),
                             ),
                             onPressed: () {
                               setState(() {
@@ -322,7 +487,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                 width: 24,
                                 child: Checkbox(
                                   value: _rememberMe,
-                                  activeColor: const Color(0xFFFF8A00),
+                                  activeColor: const Color(0xFF00BBF9),
                                   shape: RoundedRectangleBorder(
                                     borderRadius:
                                         BorderRadius.circular(4),
@@ -344,19 +509,9 @@ class _SignInScreenState extends State<SignInScreen> {
                             ],
                           ),
                           TextButton(
-                            onPressed: () {
-                              // Show a snackbar for forgot password
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                      'Forgot password feature coming soon!'),
-                                  duration: Duration(seconds: 2),
-                                ),
-                              );
-                            },
+                            onPressed: _showForgotPasswordDialog,
                             style: TextButton.styleFrom(
-                              foregroundColor: const Color(0xFFFF8A00),
+                              foregroundColor: const Color(0xFF00BBF9),
                               padding: EdgeInsets.zero,
                               minimumSize: const Size(0, 0),
                               tapTargetSize:
@@ -479,7 +634,7 @@ class _SignInScreenState extends State<SignInScreen> {
                             child: const Text(
                               'Create account',
                               style: TextStyle(
-                                color: const Color(0xFFFF8A00),
+                                color: const Color(0xFF00BBF9),
                                 fontWeight: FontWeight.bold,
                               ),
                             ),

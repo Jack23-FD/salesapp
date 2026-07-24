@@ -24,14 +24,14 @@ class ScannerControlButton extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: const Color(0xFFFF8A00),
+              color: const Color(0xFF00BBF9),
               size: 24,
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: const TextStyle(
-                color: const Color(0xFFFF8A00),
+                color: const Color(0xFF00BBF9),
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
@@ -94,14 +94,14 @@ class _ScannerFrameState extends State<ScannerFrame> with SingleTickerProviderSt
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          const Color(0xFFFF8A00).withOpacity(0.0),
-                          const Color(0xFFFF8A00),
-                          const Color(0xFFFF8A00).withOpacity(0.0),
+                          const Color(0xFF00BBF9).withOpacity(0.0),
+                          const Color(0xFF00BBF9),
+                          const Color(0xFF00BBF9).withOpacity(0.0),
                         ],
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFFF8A00).withOpacity(0.6),
+                          color: const Color(0xFF00BBF9).withOpacity(0.6),
                           blurRadius: 5,
                           spreadRadius: 2.5,
                           offset: const Offset(0, 0),
@@ -123,7 +123,7 @@ class ViewfinderPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFFFF8A00)
+      ..color = const Color(0xFF00BBF9)
       ..strokeWidth = 4
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
@@ -205,7 +205,7 @@ class ActionButton extends StatelessWidget {
           ? ElevatedButton(
               onPressed: onPressed,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF8A00),
+                backgroundColor: const Color(0xFF00BBF9),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -223,8 +223,8 @@ class ActionButton extends StatelessWidget {
           : OutlinedButton(
               onPressed: onPressed,
               style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFFFF8A00),
-                side: const BorderSide(color: const Color(0xFFFF8A00)),
+                foregroundColor: const Color(0xFF00BBF9),
+                side: const BorderSide(color: const Color(0xFF00BBF9)),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),

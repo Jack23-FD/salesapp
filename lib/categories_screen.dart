@@ -20,7 +20,11 @@ class CategoriesScreen extends StatefulWidget {
   State<CategoriesScreen> createState() => _CategoriesScreenState();
 }
 
-class _CategoriesScreenState extends State<CategoriesScreen> {
+class _CategoriesScreenState extends State<CategoriesScreen>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   String _activeFilter = 'Active Category';
   String _sortBy = 'Sort by';
   bool _sortAscending = true;
@@ -156,7 +160,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               ListTile(
                 title: Text(LocalizationService.translate('categoryScreen.allCategory')),
                 trailing: _activeFilter == 'All Category'
-                    ? const Icon(Icons.check_circle, color: const Color(0xFFFF8A00))
+                    ? const Icon(Icons.check_circle, color: const Color(0xFF00BBF9))
                     : null,
                 onTap: () {
                   setState(() {
@@ -170,7 +174,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 title: Text(LocalizationService.translate('categoryScreen.activeCategory')),
                 trailing: _activeFilter == 'Active Category' ||
                         _activeFilter == 'Active'
-                    ? const Icon(Icons.check_circle, color: const Color(0xFFFF8A00))
+                    ? const Icon(Icons.check_circle, color: const Color(0xFF00BBF9))
                     : null,
                 onTap: () {
                   setState(() {
@@ -183,7 +187,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               ListTile(
                 title: Text(LocalizationService.translate('categoryScreen.lowStockCategory')),
                 trailing: _activeFilter == 'Low Stock Category'
-                    ? const Icon(Icons.check_circle, color: const Color(0xFFFF8A00))
+                    ? const Icon(Icons.check_circle, color: const Color(0xFF00BBF9))
                     : null,
                 onTap: () {
                   setState(() {
@@ -196,7 +200,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               ListTile(
                 title: Text(LocalizationService.translate('categoryScreen.emptyCategory')),
                 trailing: _activeFilter == 'Empty Category'
-                    ? const Icon(Icons.check_circle, color: const Color(0xFFFF8A00))
+                    ? const Icon(Icons.check_circle, color: const Color(0xFF00BBF9))
                     : null,
                 onTap: () {
                   setState(() {
@@ -209,7 +213,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               ListTile(
                 title: Text(LocalizationService.translate('categoryScreen.inactiveCategory')),
                 trailing: _activeFilter == 'Inactive Category'
-                    ? const Icon(Icons.check_circle, color: const Color(0xFFFF8A00))
+                    ? const Icon(Icons.check_circle, color: const Color(0xFF00BBF9))
                     : null,
                 onTap: () {
                   setState(() {
@@ -325,11 +329,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFFF3E0),
+                        color: const Color(0xFFE0F2FE),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.info_outline,
-                          color: const Color(0xFFFF8A00), size: 18),
+                          color: const Color(0xFF00BBF9), size: 18),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -377,7 +381,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFF8A00),
+                    backgroundColor: const Color(0xFF00BBF9),
                     foregroundColor: Colors.white,
                     minimumSize: const Size(double.infinity, 48),
                     shape: RoundedRectangleBorder(
@@ -426,6 +430,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       backgroundColor: AppTheme.secondaryBackgroundColor,
       body: SafeArea(
@@ -632,6 +637,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                             width: 120,
                             height: 120,
                             fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) => const Icon(
+                              Icons.inventory_2_outlined,
+                              size: 80,
+                              color: AppTheme.primaryColor,
+                            ),
                           ),
                           const SizedBox(height: 16),
                           Text(

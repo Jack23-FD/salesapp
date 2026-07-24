@@ -100,6 +100,22 @@ class ApiService {
     return _processResponse(response) as Map<String, dynamic>;
   }
 
+  Future<Map<String, dynamic>> updateUserProfile(String userId, {String? name, String? email, String? phone, String? role}) async {
+    final headers = await _getHeaders();
+    final response = await _requestWithRetry(() => _client.put(
+      Uri.parse('$baseUrl/users/profile'),
+      headers: headers,
+      body: jsonEncode({
+        'userId': userId,
+        if (name != null) 'name': name,
+        if (email != null) 'email': email,
+        if (phone != null) 'phoneNumber': phone,
+        if (role != null) 'role': role,
+      }),
+    ));
+    return _processResponse(response) as Map<String, dynamic>;
+  }
+
   Future<Map<String, dynamic>> registerStaff(String uid, String name, String email, String? phoneNumber) async {
     final headers = await _getHeaders();
     final response = await _requestWithRetry(() => _client.post(

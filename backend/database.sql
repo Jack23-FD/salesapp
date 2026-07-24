@@ -128,3 +128,15 @@ CREATE TABLE `audit_logs` (
     CONSTRAINT `fk_audit_logs_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
     INDEX `idx_audit_logs_tenant` (`company_id`, `created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 7. Licenses Table (Simple Kiosk License System)
+CREATE TABLE IF NOT EXISTS `licenses` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `license_key` VARCHAR(100) UNIQUE NOT NULL,
+    `customer_name` VARCHAR(150) NOT NULL,
+    `expiry_date` DATE NOT NULL,
+    `status` ENUM('active', 'expired', 'blocked') NOT NULL DEFAULT 'active',
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX `idx_licenses_key` (`license_key`),
+    INDEX `idx_licenses_status` (`status`, `expiry_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+// User Model
 
 enum UserRole {
   staff,
@@ -9,9 +9,17 @@ class User {
   final String id;
   final String email;
   final String name;
+  final String? username;
+  final String? bio;
+  final String? profilePictureUrl;
+  final String? address;
   final String? companyName;
   final String? phoneNumber;
+  final String? staffId;
+  final String? branch;
+  final String? roleTitle;
   final UserRole role;
+  final String status;
   final DateTime createdAt;
   final DateTime lastLogin;
   final String authProvider;
@@ -20,9 +28,17 @@ class User {
     required this.id,
     required this.email,
     required this.name,
+    this.username,
+    this.bio,
+    this.profilePictureUrl,
+    this.address,
     this.companyName,
     this.phoneNumber,
+    this.staffId,
+    this.branch,
+    this.roleTitle,
     required this.role,
+    this.status = 'active',
     required this.createdAt,
     required this.lastLogin,
     required this.authProvider,
@@ -54,9 +70,17 @@ class User {
       id: id,
       email: map['email'] ?? '',
       name: map['name'] ?? '',
+      username: map['username'] ?? map['user_name'],
+      bio: map['bio'],
+      profilePictureUrl: map['profilePictureUrl'] ?? map['profile_picture_url'] ?? map['avatar'],
+      address: map['address'],
       companyName: map['companyName'],
-      phoneNumber: map['phoneNumber'],
+      phoneNumber: map['phoneNumber'] ?? map['phone'],
+      staffId: map['staffId'] ?? map['staff_id'],
+      branch: map['branch'],
+      roleTitle: map['roleTitle'] ?? map['role_title'],
       role: _parseRole(map['role']),
+      status: map['status'] ?? 'active',
       createdAt: _parseDateTime(map['createdAt']),
       lastLogin: _parseDateTime(map['lastLogin']),
       authProvider: map['authProvider'] ?? 'email',
@@ -67,9 +91,17 @@ class User {
     return {
       'email': email,
       'name': name,
+      'username': username,
+      'bio': bio,
+      'profilePictureUrl': profilePictureUrl,
+      'address': address,
       'companyName': companyName,
       'phoneNumber': phoneNumber,
+      'staffId': staffId,
+      'branch': branch,
+      'roleTitle': roleTitle,
       'role': describeEnum(role),
+      'status': status,
       'createdAt': createdAt,
       'lastLogin': lastLogin,
       'authProvider': authProvider,
@@ -100,9 +132,17 @@ class User {
     String? id,
     String? email,
     String? name,
+    String? username,
+    String? bio,
+    String? profilePictureUrl,
+    String? address,
     String? companyName,
     String? phoneNumber,
+    String? staffId,
+    String? branch,
+    String? roleTitle,
     UserRole? role,
+    String? status,
     DateTime? createdAt,
     DateTime? lastLogin,
     String? authProvider,
@@ -111,9 +151,17 @@ class User {
       id: id ?? this.id,
       email: email ?? this.email,
       name: name ?? this.name,
+      username: username ?? this.username,
+      bio: bio ?? this.bio,
+      profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
+      address: address ?? this.address,
       companyName: companyName ?? this.companyName,
       phoneNumber: phoneNumber ?? this.phoneNumber,
+      staffId: staffId ?? this.staffId,
+      branch: branch ?? this.branch,
+      roleTitle: roleTitle ?? this.roleTitle,
       role: role ?? this.role,
+      status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
       lastLogin: lastLogin ?? this.lastLogin,
       authProvider: authProvider ?? this.authProvider,
@@ -121,7 +169,21 @@ class User {
   }
 
   bool get isAdmin => role == UserRole.admin;
+  bool get isActive => status.toLowerCase() == 'active';
+  bool get isDisabled => status.toLowerCase() == 'disabled' || status.toLowerCase() == 'inactive';
   
+  // Helpers for Staff Profile display
+  String get displayStaffId {
+    if (staffId != null && staffId!.isNotEmpty) return staffId!;
+    final numClean = id.replaceAll(RegExp(r'[^0-9]'), '');
+    final paddedNum = numClean.isEmpty ? '00024' : numClean.padLeft(5, '0');
+    return 'STF-${paddedNum.length > 5 ? paddedNum.substring(paddedNum.length - 5) : paddedNum}';
+  }
+
+  String get displayBranch => (branch != null && branch!.isNotEmpty) ? branch! : (companyName ?? 'Chennai Main Branch');
+  String get displayRoleTitle => (roleTitle != null && roleTitle!.isNotEmpty) ? roleTitle! : (isAdmin ? 'Administrator' : 'Sales Executive');
+  String get displayPhone => (phoneNumber != null && phoneNumber!.trim().isNotEmpty) ? phoneNumber!.trim() : '+91 98765 43210';
+
   // For backward compatibility
   String get displayName => name;
 

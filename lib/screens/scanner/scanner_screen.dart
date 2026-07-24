@@ -211,13 +211,13 @@ class _ScannerScreenState extends State<ScannerScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: const Color(0xFFFF8A00)),
+          icon: const Icon(Icons.arrow_back, color: const Color(0xFF00BBF9)),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Scan Barcode',
           style: TextStyle(
-            color: const Color(0xFFFF8A00),
+            color: const Color(0xFF00BBF9),
             fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
@@ -265,7 +265,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                           decoration: InputDecoration(
                             hintText: 'Enter barcode number',
                             hintStyle: const TextStyle(color: Colors.grey),
-                            prefixIcon: const Icon(Icons.qr_code, color: Color(0xFFFF8A00)),
+                            prefixIcon: const Icon(Icons.qr_code, color: Color(0xFF00BBF9)),
                             filled: true,
                             fillColor: Colors.grey[100],
                             border: OutlineInputBorder(
@@ -274,7 +274,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide: const BorderSide(color: Color(0xFFFF8A00), width: 1.5),
+                              borderSide: const BorderSide(color: Color(0xFF00BBF9), width: 1.5),
                             ),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                           ),
@@ -295,11 +295,11 @@ class _ScannerScreenState extends State<ScannerScreen> {
                     const SizedBox(width: 10),
                     Container(
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFF8A00),
+                        color: const Color(0xFF00BBF9),
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFFF8A00).withOpacity(0.3),
+                            color: const Color(0xFF00BBF9).withOpacity(0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 4),
                           ),
@@ -467,7 +467,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xFFFF8A00),
+                  color: const Color(0xFF00BBF9),
                 ),
               ),
               const SizedBox(height: 32),
@@ -501,7 +501,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                         _scannedBarcode!,
                         style: const TextStyle(
                           fontSize: 16,
-                          color: const Color(0xFFFF8A00),
+                          color: const Color(0xFF00BBF9),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -514,7 +514,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                 const Center(
                   child: CircularProgressIndicator(
                     valueColor:
-                        AlwaysStoppedAnimation<Color>(const Color(0xFFFF8A00)),
+                        AlwaysStoppedAnimation<Color>(const Color(0xFF00BBF9)),
                   ),
                 )
               else if (_existingItem != null)
@@ -584,7 +584,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFFFF8A00),
+                    color: const Color(0xFF00BBF9),
                   ),
                   textAlign: TextAlign.center,
                   overflow: TextOverflow.ellipsis,
@@ -608,7 +608,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFFFF8A00),
+                  color: const Color(0xFF00BBF9),
                 ),
               ),
             ],
@@ -629,7 +629,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFFFF8A00),
+                  color: const Color(0xFF00BBF9),
                 ),
               ),
             ],
@@ -664,7 +664,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                   child: ElevatedButton(
                     onPressed: _addQuantity,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF8A00),
+                      backgroundColor: const Color(0xFF00BBF9),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),

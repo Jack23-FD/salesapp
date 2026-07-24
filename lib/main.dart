@@ -100,24 +100,10 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Enable navigation debug logs in development
-  NavigationDebug.enableDebugLogs = true;
+  NavigationDebug.enableDebugLogs = false;
   
-  // Initialize Google Fonts with a cache
-  await GoogleFonts.pendingFonts();
-
-  // Preload the Urbanist font
+  // Preload the Urbanist font asynchronously
   GoogleFonts.config.allowRuntimeFetching = true;
-
-  // Pre-cache the Urbanist font in different weights
-  final fontLoader = [
-    GoogleFonts.urbanist(),
-    GoogleFonts.urbanist(fontWeight: FontWeight.w500),
-    GoogleFonts.urbanist(fontWeight: FontWeight.w600),
-    GoogleFonts.urbanist(fontWeight: FontWeight.bold),
-  ];
-  
-  // Simply create the text styles - they will be cached automatically
-  debugPrint("Preloading Google Fonts: Urbanist");
 
   // Startup MySQL initialization disabled in favor of Cloud Firestore
   print('MySQL startup initialization disabled (migrated to Cloud Firestore)');
@@ -286,11 +272,12 @@ class _MyAppState extends State<MyApp> {
                 }
                 return supportedLocales.first;
               },
-              home: const SplashScreen(),
+              home: const AuthCheckScreen(),
               routes: {
                 '/signin': (context) => const SignInScreen(),
                 '/signup': (context) => SignUpScreen(selectedLanguage: 'en'),
                 '/dashboard': (context) => const MainNavigationController(),
+                '/main_navigation': (context) => const MainNavigationController(),
                 '/admin_dashboard': (context) => const AdminDashboard(),
                 '/search': (context) => const SearchScreen(),
                 '/categories': (context) => const CategoriesScreen(),
@@ -371,7 +358,7 @@ class ErrorScreen extends StatelessWidget {
               ElevatedButton(
                 onPressed: retryAction,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFF8A00),
+                  backgroundColor: const Color(0xFF00BBF9),
                 ),
                 child: const Text('Retry'),
               ),

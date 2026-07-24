@@ -216,12 +216,12 @@ class _DateSelectorState extends State<DateSelector>
                         width: 40,
                         height: 40,
                         decoration: const BoxDecoration(
-                          color: Color(0xFFFF8A00),
+                          color: Color(0xFFE0F2FE),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
                           Icons.calendar_today,
-                          color: Colors.white,
+                          color: Color(0xFF00BBF9),
                           size: 20,
                         ),
                       ),
@@ -260,7 +260,7 @@ class _DateSelectorState extends State<DateSelector>
                   turns: _rotationAnimation,
                   child: const Icon(
                     Icons.keyboard_arrow_down,
-                    color: const Color(0xFFFF8A00),
+                    color: const Color(0xFF00BBF9),
                   ),
                 ),
               ],

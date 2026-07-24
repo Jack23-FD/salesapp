@@ -76,24 +76,29 @@ class _DashboardScreenState extends State<DashboardScreen> with AutomaticKeepAli
     }
 
     try {
-      debugPrint("Dashboard: Starting data load");
+      debugPrint("Dashboard: Starting fast cached data load");
+      
+      // 1. Immediately display cached statistics (0ms delay)
+      await _loadCachedStatistics();
+
+      // 2. Fetch fresh database data in the background in parallel
       final itemProvider = Provider.of<ItemProvider>(context, listen: false);
       final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
-      
-      // Reload categories and items from database
-      await categoryProvider.reloadFromDatabase();
-      await itemProvider.reloadFromDatabase();
-      
-      // Load data from cache first for immediate display
-      await _loadCachedStatistics();
-      
-      if (mounted) {
-        await _loadStatistics();
-        _initialLoadComplete = true;
-        debugPrint("Dashboard: Data loading complete and state saved");
-      }
+
+      Future.wait([
+        categoryProvider.reloadFromDatabase(),
+        itemProvider.reloadFromDatabase(),
+      ]).then((_) async {
+        if (mounted) {
+          await _loadStatistics();
+          _initialLoadComplete = true;
+          debugPrint("Dashboard: Background data loading complete");
+        }
+      }).catchError((e) {
+        debugPrint('Error loading background data in dashboard: $e');
+      });
     } catch (e) {
-      debugPrint('Error loading data in dashboard: $e');
+      debugPrint('Error in _loadData: $e');
     }
   }
 
@@ -133,51 +138,36 @@ class _DashboardScreenState extends State<DashboardScreen> with AutomaticKeepAli
   Future<void> _loadStatistics() async {
     if (!mounted) return;
     
-    setState(() {
-      isLoadingStats = true;
-    });
+    // Only show loading spinner if no cached data exists
+    if (inboundQuantity == 0 && outboundQuantity == 0) {
+      setState(() {
+        isLoadingStats = true;
+      });
+    }
     
     try {
       final itemProvider = Provider.of<ItemProvider>(context, listen: false);
       
       debugPrint("===== LOADING DASHBOARD STATISTICS FOR DATE: ${selectedDate.toString()} =====");
       
-      // Regenerate transaction data on refresh
-      await itemProvider.forceRegenerateTransactionData();
-      
-      // Get inbound statistics from database
-      final inQuantity = await itemProvider.getTotalInboundQuantityFromDB(selectedDate);
-      debugPrint("Dashboard: Inbound Quantity from DB: $inQuantity");
-      
-      final inCategories = await itemProvider.getTotalInboundCategoriesFromDB(selectedDate);
-      debugPrint("Dashboard: Inbound Categories from DB: $inCategories");
-      
-      final inValue = await itemProvider.getTotalInboundValueFromDB(selectedDate);
-      debugPrint("Dashboard: Inbound Value from DB: $inValue");
-      
-      // Get outbound statistics from database
-      final outQuantity = await itemProvider.getTotalOutboundQuantityFromDB(selectedDate);
-      debugPrint("Dashboard: Outbound Quantity from DB: $outQuantity");
-      
-      final outCategories = await itemProvider.getTotalOutboundCategoriesFromDB(selectedDate);
-      debugPrint("Dashboard: Outbound Categories from DB: $outCategories");
-      
-      final outValue = await itemProvider.getTotalOutboundValueFromDB(selectedDate);
-      debugPrint("Dashboard: Outbound Value from DB: $outValue");
-      
-      // Also log the fallback (in-memory) values for comparison
-      debugPrint("Dashboard: Fallback In-memory Inbound Quantity: ${itemProvider.getTotalInboundQuantity(selectedDate)}");
-      debugPrint("Dashboard: Fallback In-memory Inbound Categories: ${itemProvider.getTotalInboundCategories(selectedDate)}");
-      debugPrint("Dashboard: Fallback In-memory Inbound Value: ${itemProvider.getTotalInboundValue(selectedDate)}");
+      // Execute all database queries concurrently in parallel instead of sequentially
+      final results = await Future.wait([
+        itemProvider.getTotalInboundQuantityFromDB(selectedDate),
+        itemProvider.getTotalInboundCategoriesFromDB(selectedDate),
+        itemProvider.getTotalInboundValueFromDB(selectedDate),
+        itemProvider.getTotalOutboundQuantityFromDB(selectedDate),
+        itemProvider.getTotalOutboundCategoriesFromDB(selectedDate),
+        itemProvider.getTotalOutboundValueFromDB(selectedDate),
+      ]);
       
       if (mounted) {
         setState(() {
-          inboundQuantity = inQuantity;
-          inboundCategories = inCategories;
-          inboundValue = inValue;
-          outboundQuantity = outQuantity;
-          outboundCategories = outCategories;
-          outboundValue = outValue;
+          inboundQuantity = results[0] as int;
+          inboundCategories = results[1] as int;
+          inboundValue = (results[2] as num).toDouble();
+          outboundQuantity = results[3] as int;
+          outboundCategories = results[4] as int;
+          outboundValue = (results[5] as num).toDouble();
           isLoadingStats = false;
         });
         
@@ -256,9 +246,9 @@ class _DashboardScreenState extends State<DashboardScreen> with AutomaticKeepAli
             MaterialPageRoute(builder: (context) => const UseStockScreen()),
           );
         },
-        backgroundColor: AppTheme.primaryColor,
+        backgroundColor: const Color(0xFFE0F2FE),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        child: const Icon(Icons.inventory_2_outlined, color: Colors.white),
+        child: const Icon(Icons.inventory_2_outlined, color: Color(0xFF00BBF9)),
       ),
       body: SafeArea(
         child: RefreshIndicator(
@@ -356,7 +346,7 @@ class _DashboardScreenState extends State<DashboardScreen> with AutomaticKeepAli
           'dashboard.exportData'.translate(),
           style: GoogleFonts.urbanist(
             fontWeight: FontWeight.bold,
-            color: const Color(0xFFFF8A00),
+            color: const Color(0xFF00BBF9),
           ),
         ),
         content: Column(
@@ -413,12 +403,12 @@ class _DashboardScreenState extends State<DashboardScreen> with AutomaticKeepAli
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFF3E0),
+                color: const Color(0xFFE0F2FE),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
                 icon,
-                color: const Color(0xFFFF8A00),
+                color: const Color(0xFF00BBF9),
                 size: 22,
               ),
             ),

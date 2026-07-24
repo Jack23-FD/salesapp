@@ -415,54 +415,10 @@ class BrandLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return Image.asset(
+      'assets/images/logo.png',
       height: height,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Speed lines
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Container(
-                width: 14,
-                height: 2.2,
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 3),
-              Container(
-                width: 20,
-                height: 2.2,
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 3),
-              Container(
-                width: 15,
-                height: 2.2,
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(width: 5),
-          // Shopping Cart Icon
-          Icon(
-            Icons.shopping_cart_rounded,
-            size: height * 0.82,
-            color: color,
-          ),
-        ],
-      ),
+      fit: BoxFit.contain,
     );
   }
 }

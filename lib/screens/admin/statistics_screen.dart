@@ -373,7 +373,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           style: GoogleFonts.urbanist(
             fontWeight: FontWeight.w600,
             fontSize: 20.0,
-            color: const Color(0xFFFF8A00),
+            color: const Color(0xFF00BBF9),
           ),
         ),
         backgroundColor: Colors.white,
@@ -437,7 +437,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                                         isSelected ? FontWeight.w600 : FontWeight.normal,
                                     fontSize: 14.0,
                                     color: isSelected
-                                        ? const Color(0xFFFF8A00)
+                                        ? const Color(0xFF00BBF9)
                                         : Colors.grey[700],
                                   ),
                                 ),
@@ -489,7 +489,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                                         isSelected ? FontWeight.w600 : FontWeight.normal,
                                     fontSize: 14.0,
                                     color: isSelected
-                                        ? const Color(0xFFFF8A00)
+                                        ? const Color(0xFF00BBF9)
                                         : Colors.grey[700],
                                   ),
                                 ),
@@ -634,7 +634,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                             style: GoogleFonts.urbanist(
                               fontWeight: FontWeight.w600,
                               fontSize: 18.0,
-                              color: const Color(0xFFFF8A00),
+                              color: const Color(0xFF00BBF9),
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -901,7 +901,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             height: 36,
             child: CircularProgressIndicator(
               strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF8A00)),
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00BBF9)),
             ),
           ),
           const SizedBox(height: 16),

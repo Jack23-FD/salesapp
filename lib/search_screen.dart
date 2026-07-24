@@ -43,7 +43,9 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
   final TextEditingController _searchController = TextEditingController();
   String _sortBy = kRelevance; // Use constant instead of translated string
   List<String> _recentSearches = [];
@@ -152,9 +154,11 @@ class _SearchScreenState extends State<SearchScreen>
           // Filter items that match the search term with optimized search
           final List<Item> matchingItems;
           if (searchTerm.isEmpty) {
-            matchingItems = items; // If search query is empty, pass all items to be filtered by selected chips
+            matchingItems =
+                items; // If search query is empty, pass all items to be filtered by selected chips
           } else if (categoryName.toLowerCase().contains(searchTerm)) {
-            matchingItems = items; // Include all items in the category if category matches
+            matchingItems =
+                items; // Include all items in the category if category matches
           } else {
             matchingItems = _optimizedSearch(items, searchTerm);
           }
@@ -279,10 +283,12 @@ class _SearchScreenState extends State<SearchScreen>
         _searchResults.sort((a, b) => b.item.price.compareTo(a.item.price));
         break;
       case kQuantityLowHigh:
-        _searchResults.sort((a, b) => a.item.quantity.compareTo(b.item.quantity));
+        _searchResults
+            .sort((a, b) => a.item.quantity.compareTo(b.item.quantity));
         break;
       case kQuantityHighLow:
-        _searchResults.sort((a, b) => b.item.quantity.compareTo(a.item.quantity));
+        _searchResults
+            .sort((a, b) => b.item.quantity.compareTo(a.item.quantity));
         break;
       case kRelevance:
       default:
@@ -317,8 +323,10 @@ class _SearchScreenState extends State<SearchScreen>
     ];
 
     // Load actual categories from CategoryProvider
-    final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
-    final List<String> availableCategories = categoryProvider.categories.map((c) => c.name).toList();
+    final categoryProvider =
+        Provider.of<CategoryProvider>(context, listen: false);
+    final List<String> availableCategories =
+        categoryProvider.categories.map((c) => c.name).toList();
     if (availableCategories.isEmpty) {
       availableCategories.addAll(['Food', 'Smarty']); // Fallback
     }
@@ -376,7 +384,8 @@ class _SearchScreenState extends State<SearchScreen>
                           const SizedBox(height: 12),
 
                           // Price Range Slider
-                          Text(LocalizationService.translate('search.priceRange')),
+                          Text(LocalizationService.translate(
+                              'search.priceRange')),
                           RangeSlider(
                             values: const RangeValues(0, 100),
                             min: 0,
@@ -391,7 +400,8 @@ class _SearchScreenState extends State<SearchScreen>
                           const SizedBox(height: 16),
 
                           // Category Filter
-                          Text(LocalizationService.translate('search.categories')),
+                          Text(LocalizationService.translate(
+                              'search.categories')),
                           Wrap(
                             spacing: 8,
                             children: availableCategories
@@ -416,11 +426,12 @@ class _SearchScreenState extends State<SearchScreen>
                           const SizedBox(height: 16),
 
                           // Availability Filter
-                          Text(LocalizationService.translate('search.availability')),
+                          Text(LocalizationService.translate(
+                              'search.availability')),
                           Wrap(
                             spacing: 8,
                             children: [
-                              LocalizationService.translate('search.inStock'), 
+                              LocalizationService.translate('search.inStock'),
                               LocalizationService.translate('search.outOfStock')
                             ]
                                 .map((status) => FilterChip(
@@ -450,14 +461,15 @@ class _SearchScreenState extends State<SearchScreen>
                                   onPressed: () {
                                     Navigator.pop(context);
                                   },
-                                  child: Text(LocalizationService.translate('search.cancel')),
+                                  child: Text(LocalizationService.translate(
+                                      'search.cancel')),
                                 ),
                               ),
                               const SizedBox(width: 16),
                               Expanded(
                                 child: ElevatedButton(
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFFFF8A00),
+                                    backgroundColor: const Color(0xFF00BBF9),
                                   ),
                                   onPressed: () {
                                     // Apply filters
@@ -475,7 +487,8 @@ class _SearchScreenState extends State<SearchScreen>
                                     Navigator.pop(context);
                                     _performSearch();
                                   },
-                                  child: Text(LocalizationService.translate('search.apply')),
+                                  child: Text(LocalizationService.translate(
+                                      'search.apply')),
                                 ),
                               ),
                             ],
@@ -495,21 +508,49 @@ class _SearchScreenState extends State<SearchScreen>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     // Create a list of sort options with their display names and values
     final sortOptions = [
-      {'display': LocalizationService.translate('search.relevance'), 'value': kRelevance},
-      {'display': LocalizationService.translate('search.nameAZ'), 'value': kNameAZ},
-      {'display': LocalizationService.translate('search.nameZA'), 'value': kNameZA},
-      {'display': LocalizationService.translate('search.priceLowHigh'), 'value': kPriceLowHigh},
-      {'display': LocalizationService.translate('search.priceHighLow'), 'value': kPriceHighLow},
-      {'display': LocalizationService.translate('search.quantityLowHigh'), 'value': kQuantityLowHigh},
-      {'display': LocalizationService.translate('search.quantityHighLow'), 'value': kQuantityHighLow},
+      {
+        'display': LocalizationService.translate('search.relevance'),
+        'value': kRelevance
+      },
+      {
+        'display': LocalizationService.translate('search.nameAZ'),
+        'value': kNameAZ
+      },
+      {
+        'display': LocalizationService.translate('search.nameZA'),
+        'value': kNameZA
+      },
+      {
+        'display': LocalizationService.translate('search.priceLowHigh'),
+        'value': kPriceLowHigh
+      },
+      {
+        'display': LocalizationService.translate('search.priceHighLow'),
+        'value': kPriceHighLow
+      },
+      {
+        'display': LocalizationService.translate('search.quantityLowHigh'),
+        'value': kQuantityLowHigh
+      },
+      {
+        'display': LocalizationService.translate('search.quantityHighLow'),
+        'value': kQuantityHighLow
+      },
     ];
 
     // Create availability options for filters
     final availabilityOptions = [
-      {'display': LocalizationService.translate('search.inStock'), 'value': kInStock},
-      {'display': LocalizationService.translate('search.outOfStock'), 'value': kOutOfStock},
+      {
+        'display': LocalizationService.translate('search.inStock'),
+        'value': kInStock
+      },
+      {
+        'display': LocalizationService.translate('search.outOfStock'),
+        'value': kOutOfStock
+      },
     ];
 
     return Scaffold(
@@ -521,7 +562,8 @@ class _SearchScreenState extends State<SearchScreen>
         titleSpacing: 4,
         leadingWidth: 40,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.textPrimary, size: 22),
+          icon: const Icon(Icons.arrow_back,
+              color: AppTheme.textPrimary, size: 22),
           padding: EdgeInsets.zero,
           onPressed: () {
             if (widget.isInMainNavigation) {
@@ -563,10 +605,14 @@ class _SearchScreenState extends State<SearchScreen>
                         controller: _searchController,
                         focusNode: _searchFocusNode,
                         textInputAction: TextInputAction.search,
-                        style: GoogleFonts.urbanist(fontSize: 14, color: AppTheme.textPrimary, fontWeight: FontWeight.w600),
+                        style: GoogleFonts.urbanist(
+                            fontSize: 14,
+                            color: AppTheme.textPrimary,
+                            fontWeight: FontWeight.w600),
                         textAlignVertical: TextAlignVertical.center,
                         decoration: InputDecoration(
-                          hintText: LocalizationService.translate('search.searchPlaceholder'),
+                          hintText: LocalizationService.translate(
+                              'search.searchPlaceholder'),
                           hintStyle: GoogleFonts.urbanist(
                             color: AppTheme.textSecondary,
                             fontSize: 14,
@@ -590,7 +636,8 @@ class _SearchScreenState extends State<SearchScreen>
                                   padding: const EdgeInsets.only(right: 4),
                                   child: IconButton(
                                     icon: const Icon(Icons.clear,
-                                        color: AppTheme.textSecondary, size: 20),
+                                        color: AppTheme.textSecondary,
+                                        size: 20),
                                     onPressed: _clearSearch,
                                     padding: EdgeInsets.zero,
                                     constraints: const BoxConstraints(
@@ -714,18 +761,18 @@ class _SearchScreenState extends State<SearchScreen>
                 runSpacing: 8,
                 children: _filterOptions.map((filter) {
                   return Chip(
-                    backgroundColor: const Color(0xFFFFF3E0),
+                    backgroundColor: const Color(0xFFE0F2FE),
                     label: Text(
                       filter,
                       style: const TextStyle(
                         fontSize: 12,
-                        color: const Color(0xFFFF8A00),
+                        color: const Color(0xFF00BBF9),
                       ),
                     ),
                     deleteIcon: const Icon(
                       Icons.close,
                       size: 14,
-                      color: const Color(0xFFFF8A00),
+                      color: const Color(0xFF00BBF9),
                     ),
                     onDeleted: () {
                       // Remove filter
@@ -748,7 +795,8 @@ class _SearchScreenState extends State<SearchScreen>
                 : _isSearching && _searchResults.isNotEmpty
                     ? _buildSearchResults()
                     : _isSearching && _searchResults.isEmpty
-                        ? _buildEmptyState(LocalizationService.translate('search.noResultsFound'))
+                        ? _buildEmptyState(LocalizationService.translate(
+                            'search.noResultsFound'))
                         : _buildRecentSearches(),
           ),
         ],
@@ -759,7 +807,8 @@ class _SearchScreenState extends State<SearchScreen>
           : BottomNavigationBar(
               currentIndex: 2, // Search tab is active
               type: BottomNavigationBarType.fixed,
-              selectedItemColor: const Color(0xFFFF8A00),
+              backgroundColor: const Color(0xFFE0F2FE),
+              selectedItemColor: const Color(0xFF00BBF9),
               unselectedItemColor: Colors.grey,
               items: [
                 BottomNavigationBarItem(
@@ -803,7 +852,7 @@ class _SearchScreenState extends State<SearchScreen>
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFFFF8A00)),
+            valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF00BBF9)),
           ),
           const SizedBox(height: 16),
           Text(
@@ -858,7 +907,8 @@ class _SearchScreenState extends State<SearchScreen>
         // Recent search items or empty state
         Expanded(
           child: _recentSearches.isEmpty
-              ? _buildEmptyState(LocalizationService.translate('search.noRecentSearches'))
+              ? _buildEmptyState(
+                  LocalizationService.translate('search.noRecentSearches'))
               : ListView.builder(
                   physics: const BouncingScrollPhysics(),
                   itemCount: _recentSearches.length,
@@ -966,7 +1016,8 @@ class _SearchScreenState extends State<SearchScreen>
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ItemDetailsScreen(item: result.item),
+                        builder: (context) =>
+                            ItemDetailsScreen(item: result.item),
                       ),
                     );
                   },
@@ -1037,7 +1088,8 @@ class _SearchScreenState extends State<SearchScreen>
                                     child: Text(
                                       result.item.quantity > 0
                                           ? '${LocalizationService.translate('search.inStock')}: ${result.item.quantity} ${result.item.unit}'
-                                          : LocalizationService.translate('search.outOfStock'),
+                                          : LocalizationService.translate(
+                                              'search.outOfStock'),
                                       style: GoogleFonts.urbanist(
                                         fontSize: 11,
                                         color: result.item.quantity > 0
@@ -1104,7 +1156,7 @@ class _SearchScreenState extends State<SearchScreen>
       spans.add(TextSpan(
         text: text.substring(indexOfMatch, indexOfMatch + searchTerm.length),
         style: const TextStyle(
-          backgroundColor: Color(0xFFFFEFC6),
+          backgroundColor: Color(0xFFE0F2FE),
           fontWeight: FontWeight.bold,
         ),
       ));

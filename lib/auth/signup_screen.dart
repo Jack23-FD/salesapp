@@ -35,6 +35,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _companyController = TextEditingController();
   bool _isPasswordVisible = false;
@@ -53,6 +54,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
     _passwordController.dispose();
     _companyController.dispose();
     super.dispose();
@@ -84,7 +86,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           password: _passwordController.text.trim(),
           name: _nameController.text.trim(),
           companyName: _companyController.text.trim(),
-          phoneNumber: "", // Empty since we're no longer collecting phone number
+          phoneNumber: _phoneController.text.trim(),
           role: _selectedRole,
         );
         print("DEBUG: authProvider.signUp completed with result: $success");
@@ -228,7 +230,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: const Color(0xFFFF8A00),
+                            color: const Color(0xFF00BBF9),
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -304,6 +306,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
                                 .hasMatch(value)) {
                               return 'Please enter a valid email';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Mobile Number field
+                        _buildTextField(
+                          controller: _phoneController,
+                          label: 'Mobile Number',
+                          hint: 'Enter your mobile number',
+                          icon: Icons.phone_outlined,
+                          keyboardType: TextInputType.phone,
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Please enter your mobile number';
                             }
                             return null;
                           },
@@ -387,7 +405,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         alignment: Alignment.center,
                                         decoration: BoxDecoration(
                                           color: _selectedRole == UserRole.staff
-                                              ? const Color(0xFFFF8A00)
+                                              ? const Color(0xFF00BBF9)
                                               : Colors.transparent,
                                           borderRadius: BorderRadius.circular(6),
                                         ),
@@ -418,7 +436,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         alignment: Alignment.center,
                                         decoration: BoxDecoration(
                                           color: _selectedRole == UserRole.admin
-                                              ? const Color(0xFFFF8A00)
+                                              ? const Color(0xFF00BBF9)
                                               : Colors.transparent,
                                           borderRadius: BorderRadius.circular(6),
                                         ),
@@ -448,7 +466,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           child: ElevatedButton(
                             onPressed: _isLoading ? null : _signUp,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFFF8A00),
+                              backgroundColor: const Color(0xFF00BBF9),
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
@@ -533,7 +551,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               child: const Text(
                                 'Sign In',
                                 style: TextStyle(
-                                  color: const Color(0xFFFF8A00),
+                                  color: const Color(0xFF00BBF9),
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -585,7 +603,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: const Color(0xFFFF8A00)),
+          borderSide: const BorderSide(color: const Color(0xFF00BBF9)),
         ),
       ),
       validator: validator,
